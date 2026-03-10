@@ -1,0 +1,6 @@
+﻿File with some UTF-8 characters
+résumé and blessèd have 3 UTF-8 characters in total
+caffè has 1 UTF-8 character
+sauté and Beyoncé have 2 UTF-8 characters
+Ending with 1 UTF-8 character: caffè
+Ending with 2 UTF-8 characters: caffèé

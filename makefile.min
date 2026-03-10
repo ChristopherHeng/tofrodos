@@ -1,0 +1,72 @@
+# makefile.min	Makefile for building with the MinGW-w64 GNU C Compiler.
+# Copyright (c) 1996-2026 by Christopher Heng. All rights reserved.
+
+# This makefile requires the GNU make to work (we use the GNU extensions).
+
+# To build todos.exe and fromdos.exe:
+#	make -f makefile.min all
+# To clobber all the generated *.o and *.exe:
+#	make -f makefile.min clean
+
+# Define the following if you need it:
+#	DEBUG	to add debugging information, eg "make DEBUG=1 all"
+
+
+ifdef DEBUG
+CDEBUG = -g
+LDEBUG = -g
+else
+CDEBUG = -O3
+LDEBUG = -s
+endif
+
+# programs
+CC = gcc
+CD = cd
+CP = copy
+LD = gcc
+RM = del
+
+# flags
+CFLAGS = $(DEFINES) $(TFLAG) $(CDEBUG) -c -Wall -Wextra
+LDFLAGS = $(LDEBUG)
+
+# filenames
+FROMDOS = fromdos.exe
+TODOS = todos.exe
+
+# lists of filenames
+OBJS =	emsg.o \
+	init.o \
+	tofrodos.o \
+	utility.o \
+	dowildcard.o
+
+# implicit rules
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+# user visible rules
+all: $(FROMDOS) $(TODOS)
+
+clean:
+	$(RM) $(OBJS) $(FROMDOS) $(TODOS)
+
+# real rules
+$(FROMDOS): $(OBJS)
+	$(CC) $(LDFLAGS) -o $(FROMDOS) $(OBJS)
+
+$(TODOS): $(FROMDOS)
+	$(CP) $(FROMDOS) $(TODOS)
+
+# objects
+emsg.o: emsg.c config.h emsg.h tofrodos.h
+
+init.o: init.c config.h emsg.h tofrodos.h utility.h version.h
+
+tofrodos.o: tofrodos.c config.h emsg.h tofrodos.h utility.h version.h
+
+utility.o: utility.c config.h emsg.h tofrodos.h utility.h
+
+dowildcard.o: lib/dowildcard.c
+	$(CC) $(CFLAGS) $<
