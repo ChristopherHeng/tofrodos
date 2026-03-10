@@ -65,7 +65,7 @@ LIBDIR = .\lib
 # Files
 FROMDOS = fromdos.exe
 TODOS = todos.exe
-TOFRODOS_BINARY_DIST = tofrodos-$(VERSION)-x86-64.zip
+TOFRODOS_BINARY_DIST = tofrodos-$(VERSION)-windows-x86-64.zip
 TOFRODOS_BINARY_DIST_CHECKSUM = $(TOFRODOS_BINARY_DIST).sha512
 
 OBJS =	emsg.obj \
