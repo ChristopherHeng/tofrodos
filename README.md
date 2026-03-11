@@ -111,11 +111,11 @@ or clone the repository.
 
 Then, to compile everything, just type:
 
-	make all
+	make -f makefile.gcc all
 
 You can then install by typing
 
-	make install
+	make -f makefile.gcc install
 
 Since you're installing the binary and manual page into your
 system directories with this command, you'll need to be
@@ -128,7 +128,7 @@ destinations respectively. For example, to install the binaries
 in /usr/local/bin and the manual page in /usr/local/man/man1,
 do the following:
 
-	make BINDIR=/usr/local/bin MANDIR=/usr/local/man/man1 install
+	make -f makefile.gcc BINDIR=/usr/local/bin MANDIR=/usr/local/man/man1 install
 
 Note that macOS does not have a specific directory for
 man pages. As such, simply typing "make install" will fail on
