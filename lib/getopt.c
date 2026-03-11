@@ -8,7 +8,7 @@
 	Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
 	USA.
 
-	Last updated: 6 March 2026.
+	Last updated: 11 March 2026.
 */
 /*
 	int getopt_long ( int argc, char * const * argv, const char * optstring,
@@ -67,14 +67,14 @@
 
 	In my version, getopt_long() sees 3 options: "-a", "--" (which will be reported
 	as invalid, since it doesn't allow '-' as an option character), and "-b".
-	MinGW-w64/BSD's getopt_long() sees 2 options: "-a" and "--b". I don't know about the
-	GNU version.
+	The GNU version does likewise. MinGW-w64/BSD's getopt_long(), however, sees
+	2 options: "-a" and "--b".
 
 	I don't think the MinGW-w64/BSD version is correct here, since concatenation is
 	meant to be for short options, and should not be an underhanded way to slip in a
 	long option by inserting an additional '-' midstream. Note that this difference
 	only applies to getopt_long(). The behaviour of getopt() is identical in both
-	versions, since there are no long options there.
+	the BSD and my versions, since there are no long options there.
 
 	* My getopt() follows the GNU default behaviour of shifting the arguments so
 	that those with options precede those without. This is not the case with
@@ -268,7 +268,7 @@ int getopt_long ( int argc, char * const * argv, const char * optstring,
 				found_an_opt = (look_for_arg_with_opt( argc, argv ) == 0) ? 1 : 0 ;
 			}
 			else if (arg_disposition == arguments_are_optargs) {
-				// all options are arguments to option 1
+				// all normal arguments are treated as arguments to option 1
 				optopt = RETVAL_ARG_IN_OPTARG ;
 				optarg = curptr ;
 				point_to_next_arg();
@@ -578,7 +578,7 @@ static int process_long_opt( int argc, char * const * argv, const struct option 
 			// regardless of whether there's an unwanted arg, we're done with this argv
 			point_to_next_arg();
 			break ;
-		} // if (i > 0)
+		} // if (i >= 0)
 		else if (i == -2) {
 			if (opterr) {
 				fprintf( stderr, "%s: option --%s is ambiguous\n", argv[0], curptr );
