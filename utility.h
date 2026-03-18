@@ -1,12 +1,12 @@
 /*
 	utility.h	Utility functions.
-	Copyright (c) 1996,1997 by Christopher Heng. All rights reserved.
-
-	$Id: utility.h,v 1.1 2004/10/01 12:33:39 chris Exp $
+	Copyright (c) 1996-2026 by Christopher Heng. All rights reserved.
 */
 
 #if !defined(UTILITY_H_INCLUDED)
 #define	UTILITY_H_INCLUDED
+
+#include "config.h"	// NORETURN
 
 #if defined(__cplusplus)
 extern "C" {
@@ -16,7 +16,8 @@ extern "C" {
 #if defined(__WATCOMC__)	/* errnomem() never returns */
 #pragma aux errnomem aborts
 #endif
-extern void errnomem ( int exitcode );
+extern NORETURN void errnomem ( int exitcode );
+extern char * strip_path_prefix( char * orig_filename );
 extern void * xmalloc ( size_t len );
 extern char * xstrdup( const char * s );
 

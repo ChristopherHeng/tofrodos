@@ -1,8 +1,6 @@
 /*
 	utility.c	Utility functions.
-	Copyright (c) 1996,1997 by Christopher Heng. All rights reserved.
-
-	$Id: utility.c,v 1.3 2005/03/07 13:40:52 chris Exp $
+	Copyright (c) 1996-2026 by Christopher Heng. All rights reserved.
 */
 
 /* this should always be first */
@@ -28,7 +26,7 @@
 	not return (see utility.h) so that the optimiser can jump to
 	this function (instead of calling it).
 */
-void errnomem ( int exitcode )
+NORETURN void errnomem ( int exitcode )
 {
 	emsg( EMSG_NOMEM );
 	exit( exitcode );

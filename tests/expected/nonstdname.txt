@@ -1,0 +1,2 @@
+tofrodos: Direction of conversion not specified. Either use --fromdos or --todos, or
+rename your program file "todos" or "fromdos" to set the default direction.

@@ -270,37 +270,26 @@ test_badfn_in_list()
 			if diff --binary temp/one-newline.txt lf/one-newline.txt ; then
 				rm temp/logemsg.txt temp/one-newline.txt temp/normal.txt
 				echo PASSED: ${tofrodos_cmd}
-			else
-				print_standard_fail_message
+				return
 			fi
-		else
-			print_standard_fail_message
 		fi
-	else
-		print_standard_fail_message
 	fi
+	print_standard_fail_message
 }
 
-test_direction()
+test_non_standard_name()
 {
-	# set up the default for -d or no option given, ie, source file is DOS
-	local src_dir=crlf
-	local cf_dir=lf
-
-	if [ "$1" = "-u" ] ; then
-		src_dir=lf
-		cf_dir=crlf
-	fi
-
-	local tofrodos_cmd="temp/tofrodos $1 temp/utf8.txt"
-	cp ${src_dir}/utf8.txt temp
+	local tofrodos_cmd="temp/tofrodos -l temp/nonstdname.txt temp/utf8.txt"
+	cp lf/utf8.txt temp
 	${tofrodos_cmd} || true
-	if diff --binary temp/utf8.txt ${cf_dir}/utf8.txt ; then
-		rm temp/utf8.txt
-		echo PASSED: "${tofrodos_cmd}"
-	else
-		print_standard_fail_message
+	if diff temp/nonstdname.txt expected/nonstdname.txt ; then
+		if diff --binary temp/utf8.txt lf/utf8.txt ; then
+			rm temp/nonstdname.txt temp/utf8.txt
+			echo PASSED: "${tofrodos_cmd}"
+			return
+		fi
 	fi
+	print_standard_fail_message
 }
 
 
@@ -350,11 +339,7 @@ double_conversion
 test_pipe
 
 cp ../todos temp/tofrodos
-# the -o in the next line is just so that $1 is set to something for test_direction.
-# Since -o is the default anyway, it does nothing.
-test_direction -o
-test_direction -u
-test_direction -d
+test_non_standard_name
 rm temp/tofrodos
 
 if [ -f temp/test-fails-log.txt ] ; then

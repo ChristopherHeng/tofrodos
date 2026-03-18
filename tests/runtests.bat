@@ -53,6 +53,18 @@ call _testredir.bat
 rem Check if any of the tests failed.
 if exist temp\test-fails-log.txt goto FailedTest
 echo All tests PASSED.
+echo.
+echo Note that symbolic link tests were not done. You will have to do it manually.
+echo See the remarks section of this batch file, just after this message, for details.
+rem This is a possible way to test the symbolic link support in tofrodos.
+rem copy crlf\utf8.txt temp
+rem open an admin command prompt
+rem cd to tests\temp (you will be deposited in c:\Windows\system32 or something like that)
+rem mklink symfilelink.txt utf8.txt
+rem exit the admin command prompt
+rem In your normal (non-admin) command prompt cd to the tests directory.
+rem ..\fromdos --verbose temp\symfilelink.txt
+rem diff --binary lf\utf8.txt temp\utf8.txt
 goto EndScript
 
 :FailedTest
@@ -72,7 +84,7 @@ echo Build todos.exe and fromdos.exe before running this script.
 goto EndScript
 
 :MustBuildTools
-echo set_test_filetime.exe must first be built, eg with nmake -f makefile.vs test
+echo set_test_filetime.exe must first be built, eg with nmake -f makefile.vs set_test_filetime.exe
 goto EndScript
 
 :ShowUsage

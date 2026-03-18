@@ -1,7 +1,9 @@
 # makefile.min	Makefile for building with the MinGW-w64 GNU C Compiler.
 # Copyright (c) 1996-2026 by Christopher Heng. All rights reserved.
 
-# This makefile requires the GNU make to work (we use the GNU extensions).
+# This makefile requires the GNU make to work (the GNU extensions are used).
+# Note that this is the MinGW-w64 makefile. For Linux, please use makefile.gcc instead.
+# More information on compiling can be found in README.md.
 
 # To build todos.exe and fromdos.exe:
 #	make -f makefile.min all
@@ -20,6 +22,14 @@ CDEBUG = -O3
 LDEBUG = -s
 endif
 
+# Generate the include path (path of the directory in which this Makefile resides) for gcc,
+# since we want to use "#include "config.h" even from the system-specific directories.
+# This assumes that you don't include any Makefiles (using "include") before this point, unless
+# they are all in the same directory.
+# If you do, I think you can use $(firstword) instead, to get the first Makefile.
+MAKEFILE_PATH = $(abspath $(lastword $(MAKEFILE_LIST)))
+INCLUDE_PATH = $(dir $(MAKEFILE_PATH))
+
 # programs
 CC = gcc
 CD = cd
@@ -28,7 +38,7 @@ LD = gcc
 RM = del
 
 # flags
-CFLAGS = $(DEFINES) $(TFLAG) $(CDEBUG) -c -Wall -Wextra
+CFLAGS = $(DEFINES) $(TFLAG) $(CDEBUG) -I$(INCLUDE_PATH) -c -Wall -Wextra
 LDFLAGS = $(LDEBUG)
 
 # filenames
@@ -36,8 +46,13 @@ FROMDOS = fromdos.exe
 TODOS = todos.exe
 
 # lists of filenames
-OBJS =	emsg.o \
+OBJS =	convert_file.o \
+	emsg.o \
 	init.o \
+	make_filenames.o \
+	process_file.o \
+	resolve_filename_and_convert.o \
+	strip_path_prefix.o \
 	tofrodos.o \
 	utility.o \
 	dowildcard.o
@@ -60,13 +75,24 @@ $(TODOS): $(FROMDOS)
 	$(CP) $(FROMDOS) $(TODOS)
 
 # objects
+dowildcard.o: lib/dowildcard.c
+	$(CC) $(CFLAGS) $<
+
+convert_file.o: convert_file.c config.h emsg.h tofrodos.h
+
 emsg.o: emsg.c config.h emsg.h tofrodos.h
 
 init.o: init.c config.h emsg.h tofrodos.h utility.h version.h
 
+make_filenames.o: make_filenames.c config.h emsg.h tofrodos.h utility.h
+
+process_file.o: process_file.c config.h emsg.h tofrodos.h utility.h
+
+resolve_filename_and_convert.o: windows/resolve_filename_and_convert.c config.h emsg.h tofrodos.h utility.h
+	$(CC) $(CFLAGS) $<
+
+strip_path_prefix.o: strip_path_prefix.c config.h utility.h
+
 tofrodos.o: tofrodos.c config.h emsg.h tofrodos.h utility.h version.h
 
 utility.o: utility.c config.h emsg.h tofrodos.h utility.h
-
-dowildcard.o: lib/dowildcard.c
-	$(CC) $(CFLAGS) $<

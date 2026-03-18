@@ -1,161 +1,319 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
-<!-- Copyright 1996-2026 Christopher Heng. All rights reserved. -->
-<title>tofrodos - Converts text files between MSDOS and Unix file formats</title>
-<style>
-body { font-family: Arial, Helvetica, sans-serif ; font-size: 1.2em ; }
-.content { max-width: 1024px ; margin-left: auto ; margin-right: auto ;}
-dt { font-weight: bold ; }
-span.programname { font-weight: bold ; }
-span.optionchar { font-weight: bold ; }
-span.filename { font-family: "Courier New", Courier, monospace ; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Tofrodos - Convert text files between DOS and Unix file formats</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      font-family: Arial;
+      font-size: 16pt;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 45em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
 </head>
 <body>
-
-<div class="content">
-
-<h1>Tofrodos - Converts text files between MSDOS and Unix file formats</h1>
-
-<h2>Synopsis</h2>
-
-<p>
-<span class="programname">fromdos</span> [options] [<span class="filename">file...</span>]<br>
-<span class="programname">todos</span> [options] [<span class="filename">file...</span>]<br>
-</p>
-
-<h2>Description</h2>
-
-<p>
-DOS text files traditionally have carriage return and line feed pairs
-as their newline characters while Unix text files have the line feed
-as their newline character. <span class="programname">fromdos</span>
-converts ASCII and Unicode UTF-8 text files from the DOS format to the Unix format, while
-<span class="programname">todos</span>
-converts them from the Unix format to the DOS format.
-</p>
-
-<p>
-The programs accept multiple filenames and wildcards as their arguments.
-You may also use them in a pipe.
-If either program finds its input redirected, it will process stdin
-and place the output on stdout.
-</p>
-
-<h2>Options</h2>
-
-<dl title="List of options available for Tofrodos">
-<dt>-b, --backup</dt>
-<dd><p>
-Make a backup of original file. The original file is renamed
-with a <span class="filename">.bak</span> extension appended to the original
-filename, silently replacing any existing file of that name. For example,
-"<span class="filename">filename.ext</span>" becomes
-"<span class="filename">filename.ext.bak</span>" replacing any existing file
-having the name "<span class="filename">filename.ext.bak</span>". Important: the program behaves
-differently if it is compiled for DOS (as compared to being compiled for Windows, Linux,
-Mac OS X or other systems). In view of the filename restrictions present on DOS, the DOS executable
-will strip the original file extension, if any, from the file
-before appending the <span class="filename">.bak</span> extension. For example,
-"<span class="filename">filename.ext</span>" becomes "<span class="filename">filename.bak</span>".
-</p></dd>
-<dt>-d, --dos</dt>
-<dd><p>
-Convert from DOS to Unix. This forces the program to convert the file in
-a particular direction. By default, if the program is named
-<span class="programname">fromdos</span> or <span class="programname">dos2unix</span>
-it will assume that the input file is in a DOS format and convert it to
-a Unix format. If the program is named <span class="programname">todos</span> or
-<span class="programname">unix2dos</span> it will assume that the input file is in a Unix format and convert it to
-a DOS format. Using the <span class="optionchar">-d</span> option forces the program to convert from a DOS
-format to a Unix format regardless of how the program is named. Likewise, using the
-<span class="optionchar">-u</span> option forces the program to convert from a Unix format to a DOS format
-regardless of the name of the program.
-</p></dd>
-<dt>-e, --exit-on-error</dt>
-<dd><p>
-Abort processing on any error in any file. Normally, the program will
-simply skip to process the next file on the command line when it encounters
-any errors. This option causes it to abort on errors.
-</p></dd>
-<dt>-f, --force</dt>
-<dd><p>
-Force: convert even if the file is not writeable (read-only). By default,
-if the program finds that the file does not have write permission, it will not process
-that file. This option forces the conversion even if the file is read-only.
-</p></dd>
-<dt>-h, --help</dt>
-<dd><p>
-Display a short help screen on the program usage and quit.
-</p></dd>
-<dt>-l &lt;logfile&gt;, --log &lt;logfile&gt;</dt>
-<dd><p>
-Log error messages to &lt;logfile&gt;. Note that if your command line has an
-error, such as when you specify an unknown option, the error message for the
-command line option error will be issued to stderr instead and not logged.
-</p></dd>
-<dt>-o, --overwrite</dt>
-<dd><p>
-Overwrite the original file (no backup). This is the default.
-</p></dd>
-<dt>-p, --preserve</dt>
-<dd><p>
-Preserve file ownership and time on Unix-type systems (like Linux). On Windows and MSDOS, it only
-preserves the file time. Note that on many Unix-type systems, including Linux, the file
-ownership will only be preserved if the program is run as root, otherwise it
-will just set the file time and silently fail the change of file
-ownership. On such systems, if you want a warning message when the file ownership
-cannot be changed, use <span class="optionchar">-v</span> (the verbose flag) as well.
-</p></dd>
-<dt>-u, --unix</dt>
-<dd><p>
-Convert from Unix to DOS. See the <span class="optionchar">-d</span> option above for more information.
-</p></dd>
-<dt>-v, --verbose</dt>
-<dd><p>
-Verbose.
-</p></dd>
-<dt>-V, --version</dt>
-<dd><p>
-Show version message and quit.
-</p></dd>
+<header id="title-block-header">
+<h1 class="title">Tofrodos - Convert text files between DOS and Unix
+file formats</h1>
+</header>
+<h1 id="name">NAME</h1>
+<p>Tofrodos - convert text files between DOS and Unix formats.</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p><strong>fromdos</strong> [<em>options</em>] [<em>file…</em>]<br />
+<strong>todos</strong> [<em>options</em>] [<em>file…</em>]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>DOS (and Windows) plain ASCII or Unicode UTF-8 text files
+traditionally have a carriage return and line feed pair to mark the end
+of each line, while Unix-type systems (including Linux, macOS, FreeBSD,
+etc) use a line feed for that purpose.</p>
+<p><strong>fromdos</strong> converts such files from the DOS format to
+the Unix format, while <strong>todos</strong> converts them in the other
+direction.</p>
+<p>The programs accept multiple filenames and wildcards as their
+arguments. You can also use them in a pipe. If the program finds its
+input redirected, it will take its input from stdin and send its output
+to stdout.</p>
+<p>Note that <strong>fromdos</strong> and <strong>todos</strong> are
+actually the same program. The name under which the program is run
+determines the default direction it converts (unless overridden by an
+option). If you prefer, you can also rename it to
+<strong>unix2dos</strong> (which will make it behave like
+<strong>todos</strong>) and <strong>dos2unix</strong> (which will make
+it act as though it is <strong>fromdos</strong>).</p>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt><strong>-b, --backup</strong></dt>
+<dd>
+<p>Make a backup of the original file. It will have a “.bak” suffix
+appended to its name. For example, “filename.ext” becomes
+“filename.ext.bak”, and if there is already a file named
+“filename.ext.bak” in that same directory, it will be silently
+replaced.</p>
+</dd>
+<dd>
+<p>Note: the program behaves differently if it is compiled for DOS (as
+compared to being compiled for Linux, Windows, macOS, FreeBSD or other
+systems). In view of the filename restrictions present on that system,
+where files have at most a single extension, the original file extension
+(if any) will be replaced by “.bak”. For example, “filename.ext” becomes
+“filename.bak”.</p>
+</dd>
+<dt><strong>-d, --dos2unix, --fromdos</strong></dt>
+<dd>
+<p>Convert from DOS to Unix. This forces the program to convert the file
+in the specified direction. By default, if the program is named
+<strong>fromdos</strong> or <strong>dos2unix</strong>, it will convert
+files to a Unix format. If it is named <strong>todos</strong> or
+<strong>unix2dos</strong>, it will them to a DOS format. Using the
+“--fromdos” option forces the program to convert to a Unix format
+regardless of the program name. Likewise, using the “--todos” option
+forces it to convert to a DOS format.</p>
+</dd>
+<dt><strong>-e, --exit-on-error</strong></dt>
+<dd>
+<p>Abort processing the rest of the files if there is an error in any
+file. Normally, the program will simply skip to process the next file on
+the command line when it encounters an error. This option causes it to
+abort instead.</p>
+</dd>
+<dt><strong>-f, --force</strong></dt>
+<dd>
+<p>Convert the file even if it is not writeable (that is, it is
+read-only). By default, if the program finds that the file does not have
+write permission, it will not process it. This option forces the
+conversion even if it is read-only.</p>
+</dd>
+<dt><strong>-h, --help</strong></dt>
+<dd>
+<p>Display a short help screen on the program usage and quit.</p>
+</dd>
+<dt><strong>-l &lt;logfile&gt;, --log=&lt;logfile&gt;</strong></dt>
+<dd>
+<p>Log most error messages and all verbose messages to
+&lt;logfile&gt;.</p>
+</dd>
+<dd>
+<p>Note though that if your command line has an error, such as when you
+specify an option that the program does not recognize, the error message
+will still be printed on stderr (which usually means the screen), and
+not logged, since at the time the program checks the command line, it
+has still not set up the log file.</p>
+</dd>
+<dt><strong>-o, --overwrite</strong></dt>
+<dd>
+<p>Overwrite the original file (no backup). This is the default.</p>
+</dd>
+<dt><strong>-p, --preserve</strong></dt>
+<dd>
+<p>Preserve file ownership and time on Unix-type systems (like Linux,
+macOS, FreeBSD, etc). On Windows and MSDOS, it only preserves the file
+time. Note that on Unix-type systems, the ownership will only be
+preserved if the program is run as root or via <strong>sudo</strong>,
+otherwise it will just set the file time and silently fail the change of
+ownership. If you want a warning message when the file ownership cannot
+be changed, set the verbose mode as well, using the “--verbose”
+option.</p>
+</dd>
+<dt><strong>-u, --unix2dos, --todos</strong></dt>
+<dd>
+<p>Convert from Unix to DOS. See the “--fromdos” option above for more
+information.</p>
+</dd>
+<dt><strong>-v, --verbose</strong></dt>
+<dd>
+<p>Display the current version and quit.</p>
+</dd>
 </dl>
-
-<h2>Exit Code</h2>
-
-<p>
-Tofrodos terminates with an exit code of 0 on success and 1 on error.
-</p>
-<p>
-If the program is invoked with multiple files on the command line, the default behaviour is to skip to the next
-file in the list if an error is encountered with any file. In such a case, the exit code returned will the
-status of the last file processed (ie, 0 on success, 1 on failure). If this is not desirable, use the
-<span class="optionchar">-e</span> option, which will force the program to abort immediately with the appropriate exit
-code on encountering any error.
-</p>
-
-<h2>Author</h2>
-
-<p>
-The program and its accompanying files and documentation are:<br>
-Copyrighted &copy; 1996-2026 by Christopher Heng. All rights reserved.
-</p>
-
-<p>
-The included "getopt.c" and "getopt.h" are distributed under the terms of the
-GNU General Public License Version 3, a copy of which is enclosed in
-this package in the file COPYING-GPL3.txt
-The other files are distributed under the terms of the GNU General Public License
-Version 2, a copy of which is enclosed in this package in the file COPYING-GPL2.txt.
-</p>
-
-<p>
-The latest version of Tofrodos can be obtained from
-<a href="https://github.com/ChristopherHeng/tofrodos" target="_top">https://github.com/ChristopherHeng/tofrodos</a>.
-</p>
-
-</div>
-
+<h1 id="exit-code">EXIT CODE</h1>
+<p>Tofrodos terminates with an exit code of 0 on success and 1 on
+error.</p>
+<p>If the program is invoked with multiple files on the command line,
+the default behaviour is to skip to the next file in the list if an
+error is encountered with any file. In such a case, the exit code
+returned will the status of the last file processed (ie, 0 on success, 1
+on failure). If this is not desirable, use the “--exit-on-error” option,
+which will force the program to abort immediately with the appropriate
+exit code on encountering an error.</p>
+<h1 id="examples">EXAMPLES</h1>
+<p>To convert a single file to Unix format (with line feeds):</p>
+<pre><code>fromdos filetoconvert.txt</code></pre>
+<p>To convert multiple files, including wildcard characters, to DOS
+format (with carriage return/line feed pairs):</p>
+<pre><code>todos readme.txt manual.html *.c *.h</code></pre>
+<p>If you want the original file backed up with a “.bak” extension:</p>
+<pre><code>todos --backup filetoconvert.txt</code></pre>
+<p>To use the program in a pipe:</p>
+<pre><code>cat dosversion.txt | fromdos | diff - unixversion.txt</code></pre>
+<h1 id="author">AUTHOR</h1>
+<p>The program and its accompanying files and documentation are:<br />
+Copyright 1996-2026 by Christopher Heng. All rights reserved.</p>
+<p>The included “getopt.c” and “getopt.h” are distributed under the
+terms of the GNU General Public License Version 3, and the remaining
+files under the GNU General Public License Version 2.</p>
+<p>The latest version of tofrodos can be obtained from<br />
+<a href="https://github.com/ChristopherHeng/tofrodos"
+class="uri">https://github.com/ChristopherHeng/tofrodos</a></p>
 </body>
 </html>

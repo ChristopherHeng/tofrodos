@@ -3,11 +3,11 @@
 ## Contents
 
 - [What is Tofrodos?](#intro)
+- [How to Use Tofrodos](#howtouse)
 - [How to Install Tofrodos](#install)
 	- [Windows](#instwin)
 	- [MSDOS, FreeDOS and Clones](#instdos)
 	- [Linux, macOS and Unix-type Systems](#instunix)
-- [How to Use Tofrodos](#howtouse)
 - [Compiling Tofrodos for Linux, macOS and Unix-type Systems](#bldunix)
 - [Compiling Tofrodos for Windows](#bldwin)
 - [Compiling Tofrodos for MSDOS](#blddos)
@@ -17,14 +17,61 @@
 
 ## <a id="intro"></a>What is Tofrodos?
 
-DOS text files traditionally have CR/LF (carriage return/line feed) pairs
-as their new line delimiters while Unix text files traditionally have
+DOS (and Windows) text files traditionally have CR/LF (carriage return/line feed)
+pairs as their new line delimiters while Unix text files traditionally have
 LFs (line feeds) to terminate each line.
 
 Tofrodos comprises two programs, "fromdos" and "todos", which convert
 ASCII and Unicode UTF-8 text files to and from these formats. Use "fromdos"
 to convert DOS text files to the Unix format, and "todos" to convert Unix
 text files to the DOS format.
+
+## <a id="howtouse"></a>How to Use Tofrodos
+
+Tofrodos is a command line program. This means that if you
+use Windows, you will need to open Command Prompt.
+If you use any of the Unix-type systems like Linux, macOS,
+etc, you will need to start a shell (for example, bash).
+
+To convert a plain text file with CR-LF line endings (which
+is used by Windows and DOS) to LF endings (used by
+Unix-type systems), do:
+
+	fromdos file-to-convert.txt
+
+To convert a plain text file with LF to CR-LF, do:
+
+	todos file-to-convert.txt
+
+If you have more than one file to convert, you can list them
+all on the command line at once, like so:
+
+	fromdos file1.txt file2.txt file3.txt
+
+or even use wildcard characters, such as
+
+	todos *.txt
+
+You can also put the program in a pipe (that is, cause it to
+get its input from another program and send its output to a third
+program), like so:
+
+	cat some-file.txt | todos | diff - reference.txt
+
+The names *todos* and *fromdos* (or "todos.exe" and "fromdos.exe"
+in Windows) are traditionally the names under which this program is
+installed. But you can also rename the program files to *unix2dos*
+and *dos2unix* (or "unix2dos.exe" and "dos2unix.exe" in Windows),
+and they will work just fine. Under the hood, these are all the
+same program file. Tofrodos checks the name under which it is run
+(whether "todos", "fromdos", "unix2dos" or "dos2unix") and converts
+your files accordingly.
+
+That's it. For more advanced options, please see the
+tofrodos manual. If you use Windows, open `tofrodos.html`
+in your web browser. If you use Linux and have installed
+Tofrodos in the usual way, type `man fromdos` or
+`man todos`.
 
 ## <a id="install"></a>How to Install Tofrodos
 
@@ -64,36 +111,6 @@ You will need to compile the sources. See the section
 
 See the section
 [Compiling Tofrodos for Linux, macOS and Unix-type Systems](#bldunix).
-
-## <a id="howtouse"></a>How to Use Tofrodos
-
-Tofrodos is a command line program. This means that if you
-use Windows, you will need to open a Command Prompt window.
-If you use any of the Unix-type systems like Linux, macOS,
-etc, you will need to start a shell (for example, bash).
-
-To convert plain text files with CR-LF line endings (which
-is used by Windows and DOS) to LF endings (used by
-Unix-type systems), do:
-
-	fromdos file1.txt file2.txt file3.txt
-
-To convert plain text files with LF to CR-LF, do:
-
-	todos file1.txt file2.txt file3.txt
-
-In the above examples, I converted 3 files "file1.txt",
-"file2.txt" and "file3.txt" but you can convert any
-number you want (even just one), within the limits of
-what your shell (or command prompt) will allow you.
-
-That's it. For more advanced options, please see the
-tofrodos manual. If you use Windows, open `tofrodos.html`
-in your web browser. If you use Linux and have installed
-Tofrodos in the usual way, type `man fromdos` or
-`man todos`. (Alternatively, your Linux distribution may
-have renamed your manual to tofrodos.1, in which case,
-type `man tofrodos`.)
 
 ## <a id="bldunix"></a>Compiling Tofrodos for Linux, macOS and Unix-type Systems
 
@@ -181,7 +198,9 @@ The distribution binaries were compiled with Visual Studio.
 
 ## <a id="blddos"></a>Compiling Tofrodos for MSDOS
 
-To compile for MSDOS, you will need OpenWatcom C/C++.
+To cross-compile for MSDOS, you will need OpenWatcom C/C++. You will
+need to compile from Windows, rather than MSDOS, since many of the
+files have longer filenames than MSDOS can handle.
 
 First, get the source zip from
 [Tofrodos' releases page](https://www.github.com/ChristopherHeng/tofrodos/releases)
@@ -203,7 +222,7 @@ Then, compile the source using the following command:
 
 	wmake -f makefile.wcc TARGET=dos16 all
 
-Alternatively, you can also create a 32-bit version that uses the
+Alternatively, you can also create a 32-bit version that uses a
 DOS extender:
 
 	wmake -f makefile.wcc TARGET=dos32 all
@@ -233,6 +252,40 @@ with people using it on macOS, FreeBSD, HP-UX and others.
 
 Dates given are the dates where the code base was finalised and do not
 necessarily refer to the date of public release.
+
+Version 2.0.0 18 March 2026
+- [All systems] the long options --unix and --dos have been
+renamed --unix2dos and --dos2unix respectively to make it easier to
+remember what it does. You can still type --unix or --dos if you like,
+since you are allowed to truncate long options provided the letters
+uniquely identify the option you want. Note: you do not need to use
+these options if you are using the default names for the program
+(todos, fromdos, unix2dos or dos2unix), since the direction of
+conversion is implicit from the name.
+- [All systems] added long options --todos and --fromdos, which are
+synonyms for --unix2dos and --dos2unix respectively, for those who
+are more familiar with those names.
+- [All systems] now checks to make sure the program is named either
+"todos", "fromdos", "dos2unix" or "unix2dos" or one of
+the --todos, --fromdos, --unix2dos, --dos2unix, -u, or -d options
+is specified, otherwise it will not proceed with the conversion.
+Previously, if the direction of conversion was not clear from the
+name of the program or from its options, it would assume the
+conversion was in a particular direction depending on the operating system.
+This meant that the program behaved differently on different systems
+if it was given some arbitrary name (other than one of the above).
+- [All systems] the documentation has been updated (ie, the manual pages
+and this README file). The man page and its HTML equivalent are now
+generated from the same source file, making it easier to update in
+the future.
+- [Windows] now supports the Windows' implementation of symbolic links
+introduced in Vista in 2007. Note that symlinks have been supported on
+Unix-type systems (eg, Linux, macOS, *BSD, etc) since 2003 (ver 1.7).
+- [Windows] now supports '/' as directory separators (in addition to
+the usual '\\') for pathnames since Windows can also handle these.
+(Specifically, Windows accepts both separators at the Win32 API
+level, though not all Windows programs, including Microsoft's own,
+support it. Now, Tofrodos also supports it.)
 
 Version 1.9.0 10 March 2026
 - [All systems] added support for long options (for example, instead

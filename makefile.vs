@@ -20,7 +20,7 @@
 
 # The following is used for generating the binary distribution zip; override on the nmake command line.
 !ifndef VERSION
-VERSION = 1.9.0
+VERSION = 2.0.0
 !endif
 
 # Programs
@@ -52,15 +52,16 @@ CFLAGS = $(CFL1) $(CFL2)
 	# /I		- include directory
 	# /c		- compile only
 CFL1 =  /nologo /W4 /WX /O2 /D "NDEBUG" /D "_CONSOLE" /D "WIN32" /D "_MBCS" /MT /utf-8 /std:c17
-CFL2 = /I "$(LIBDIR)" /Fo"$(BINDIR)\\" /c
+CFL2 = /I"$(LIBDIR)\\" /I"$(MAKEDIR)\\" /Fo"$(BINDIR)\\" /c
 LDFLAGS = $(LDFL1) $(LDFL2) $(LDFL3)
 LDFL1 = /OUT:"$(FROMDOS)" /INCREMENTAL:NO /NOLOGO
 LDFL2 = /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /WX
 LDFL3 = setargv.obj
 
 # Directories
-BINDIR = .
-LIBDIR = .\lib
+BINDIR = $(MAKEDIR)
+LIBDIR = $(MAKEDIR)\lib
+SYSDIR = $(MAKEDIR)\windows
 
 # Files
 FROMDOS = fromdos.exe
@@ -68,10 +69,15 @@ TODOS = todos.exe
 TOFRODOS_BINARY_DIST = tofrodos-$(VERSION)-windows-x86-64.zip
 TOFRODOS_BINARY_DIST_CHECKSUM = $(TOFRODOS_BINARY_DIST).sha512
 
-OBJS =	emsg.obj \
+OBJS =	convert_file.obj \
+	emsg.obj \
 	init.obj \
 	getopt.obj \
+	make_filenames.obj \
 	mkstemp.obj \
+	process_file.obj \
+	resolve_filename_and_convert.obj \
+	strip_path_prefix.obj \
 	tofrodos.obj \
 	utility.obj
 
@@ -88,13 +94,13 @@ clean:
 	$(RM) $(OBJS) set_test_filetime.obj
 
 clobber: clean
-	$(RM) $(FROMDOS) $(TODOS) tofrodos-*.zip tofrodos-*.sha512 set_test_filetime.exe readme.html
+	$(RM) $(FROMDOS) $(TODOS) tofrodos-*.zip tofrodos-*.sha512 set_test_filetime.exe readme.html fromdos.1 tofrodos.html
 
 test: $(FROMDOS) $(TODOS) set_test_filetime.exe
 	cd tests
 	runtests all
 
-dist: $(TOFRODOS_BINARY_DIST) $(TOFRODOS_BINARY_DIST_CHECKSUM)
+dist: fromdos.1 tofrodos.html $(TOFRODOS_BINARY_DIST) $(TOFRODOS_BINARY_DIST_CHECKSUM)
 
 $(FROMDOS): $(OBJS)
 	$(LD) @<<
@@ -113,19 +119,38 @@ $(TOFRODOS_BINARY_DIST): $(TODOS) $(FROMDOS) readme.html tofrodos.html COPYING-G
 $(TOFRODOS_BINARY_DIST_CHECKSUM): $(TOFRODOS_BINARY_DIST) $(TODOS) $(FROMDOS) readme.html tofrodos.html COPYING-GPL2.txt COPYING-GPL3.txt
 	hash -g -o -f $@ $**
 
+# library
 getopt.obj: $(LIBDIR)\getopt.c $(LIBDIR)\getopt.h
 	$(CC) $(CFLAGS) %s
 
 mkstemp.obj: $(LIBDIR)\mkstemp.c
 	$(CC) $(CFLAGS) %s
 
-emsg.obj: emsg.c emsg.h tofrodos.h
+# main objs
+convert_file.obj: convert_file.c config.h emsg.h tofrodos.h
 
-init.obj: init.c emsg.h tofrodos.h utility.h version.h $(LIBDIR)\getopt.h
+emsg.obj: emsg.c config.h emsg.h tofrodos.h
 
-tofrodos.obj: tofrodos.c emsg.h tofrodos.h utility.h version.h $(LIBDIR)\getopt.h
+init.obj: init.c config.h emsg.h tofrodos.h utility.h version.h $(LIBDIR)\getopt.h
 
-utility.obj: utility.c emsg.h tofrodos.h utility.h
+make_filenames.obj: make_filenames.c config.h emsg.h tofrodos.h utility.h
+
+process_file.obj: process_file.c config.h emsg.h tofrodos.h utility.h
+
+resolve_filename_and_convert.obj: $(SYSDIR)\resolve_filename_and_convert.c config.h emsg.h tofrodos.h utility.h
+	$(CC) $(CFLAGS) %s
+
+strip_path_prefix.obj: strip_path_prefix.c config.h utility.h
+
+fromdos.1: man\manual-source.md man\man-metadata.txt
+	pandoc -s -t man -o $@ --metadata-file=man\man-metadata.txt %s
+
+tofrodos.html: man\manual-source.md man\html-metadata.txt
+	pandoc -s -t html -o $@ --metadata-file=man\html-metadata.txt -V mainfont=Arial -V fontsize=16pt -V maxwidth=45em %s
+
+tofrodos.obj: tofrodos.c config.h emsg.h tofrodos.h utility.h version.h $(LIBDIR)\getopt.h
+
+utility.obj: utility.c config.h emsg.h tofrodos.h utility.h
 
 readme.html: README.md
 	pandoc -f gfm -t html -o $@ -s -V mainfont=Arial -V fontsize=16pt %s

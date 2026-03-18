@@ -103,6 +103,21 @@ extern "C" {
 #define	USE_SUPPLIED_GETOPT
 #endif
 
+// for a function that never returns
+// Note that for Watcom C, you have to use:
+//		#pragma aux <function-name> aborts
+#if defined(__GNUC__) && (__GNUC__ >= 3)
+#define NORETURN __attribute__((__noreturn__))
+#elif defined(_MSC_VER)
+#define NORETURN __declspec(noreturn)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
+#define	NORETURN [[noreturn]]
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#define	NORETURN _Noreturn
+#else
+#define NORETURN
+#endif
+
 /* map strcasecmp() to stricmp() where needed */
 #if defined(_MSC_VER) || defined(__WATCOMC__)
 #define	strcasecmp	stricmp
