@@ -32,6 +32,12 @@
 	- Note that this implementation does not follow the OpenBSD and MinGW-w64's method of using more than 6 Xs
 	if the caller provides it. It strictly uses the last 6 Xs, and that's it, just like the old Unix libc,
 	GNU libc and presumably also POSIX versions.
+	- Do not use this implementation on POSIX systems (not that it's needed there). We do not set the
+	umask to 0600 before creating the file, as we should, since it is irrelevant for the platforms
+	(Windows and MSDOS) for which this was primarily written.
+
+	29 March 2026
+	- added warning in the comments not to use this implmentation on POSIX systems
 
 	2 March 2026
 	- bug fix: no longer opens file with O_BINARY

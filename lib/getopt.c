@@ -8,7 +8,7 @@
 	Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
 	USA.
 
-	Last updated: 11 March 2026.
+	Last updated: 20 March 2026.
 */
 /*
 	int getopt_long ( int argc, char * const * argv, const char * optstring,
@@ -635,8 +635,8 @@ static inline int get_index_of_matching_longopt( const struct option * longopts,
 				found = 1 ;
 				break ;
 			}
-		} // for (i = 0; opts_ptr->name != NULL; i++, opts_ptr++)
-	}
+		}
+	} // for (i = 0; opts_ptr->name != NULL; i++, opts_ptr++)
 	if (!found && (prev_partial_match != -1)) {
 		retval = prev_partial_match ;
 	}

@@ -99,9 +99,6 @@ either download the sources from the releases page or clone the
 repository. See the section [Compiling Tofrodos for Windows](#bldwin)
 for more information.
 
-In addition, if you are still using a 32-bit version of Windows,
-you will have to compile Tofrodos yourself.
-
 ### <a id="instdos"></a>MSDOS, FreeDOS and Clones
 
 You will need to compile the sources. See the section
@@ -173,7 +170,7 @@ DOS format. No code changes are necessary.
 ## <a id="bldwin"></a>Compiling Tofrodos for Windows
 
 You do not actually need to compile Tofrodos for Windows if you
-don't want to, since you can download the precompiled binaries from
+don't want to, since you can download the precompiled 64 bit binaries from
 [Tofrodos' releases page](https://www.github.com/ChristopherHeng/tofrodos/releases)
 
 For those who prefer to compile it yourself, either download the
@@ -234,15 +231,23 @@ Make sure you do a
 before compiling again for a different target or the response files
 and object files will be wrong for the new target.
 
+Note that the sources are configured for compilation with the
+"stable testing" version of OpenWatcom as found on
+https://openwatcom.org/ftp/source/ow_portable_v2_stable.zip
+If you are using the earlier version 1.9, you may have to tweak
+`config.h` to define some compatibility macros and typedefs. I have
+added instructions to that file on what to do if you compile with
+that old version.
+
 ## <a id="porting"></a>Porting to Other Systems
 
 If you want to compile Tofrodos for a system other than Linux, MSDOS
-or Windows you may or may not have some work in store for you. The
+or Windows, you may or may not have some work in store for you. The
 program is very small, so the work you need to do is probably
 (hopefully) minimal.
 
 The first place to look into is probably the config.h file, where I
-tried to place as many system and compiler macros as I could bother.
+tried to place as many system and compiler macros as I could think of.
 
 If you are compiling on other Unix systems, tweaking the config.h file
 macros may well be all that you need to do. I have reports of success
@@ -250,8 +255,26 @@ with people using it on macOS, FreeBSD, HP-UX and others.
 
 ## <a id="history"></a>History of Changes
 
-Dates given are the dates where the code base was finalised and do not
+The dates given are when the code base was finalised and do not
 necessarily refer to the date of public release.
+
+Version 2.1.0 29 Mar 2026
+- [All systems except MSDOS] fixed bug where Tofrodos would
+incorrectly handle files with multiple hard links.
+- [Unix-type systems] fixed bug where in certain situations,
+earlier versions of Tofrodos could fail to correctly determine a
+file's read/write permissions. It only happens if you try
+to convert a file that you do not own.
+- [All systems] if the --preserve option is used, and Tofrodos
+is not able to restore the file's original owner and/or time, it will
+now issue error messages to that effect. It would previously silently
+fail the change.
+- [Unix-type systems] Tofrodos will no longer allow you to convert
+a read-only file that you are not the owner of, even if you use
+the --force option. (You can, of course, manually chmod the file to
+remove the read-only flag if you have the necessary pemissions.)
+- In view of the non-trivial bug fixes here, this is a
+recommended upgrade.
 
 Version 2.0.0 18 March 2026
 - [All systems] the long options --unix and --dos have been

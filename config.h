@@ -82,7 +82,7 @@ extern "C" {
 #endif
 #endif
 
-#if defined(__WIN32__) || defined(__NT__) || defined(_WIN32)
+#if defined(__WIN32__) || defined(__NT__) || defined(_WIN32) || defined(_WIN64)
 #if !defined(WIN32)
 #define	WIN32
 #endif
@@ -118,19 +118,40 @@ extern "C" {
 #define NORETURN
 #endif
 
-/* map strcasecmp() to stricmp() where needed */
-#if defined(_MSC_VER) || defined(__WATCOMC__)
-#define	strcasecmp	stricmp
+// define compatibility macros and typedefs so that we don't need so many ifdefs in the
+// main code body (since they add clutter and make things hard to follow)
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+// Note that these typedefs are already defined in the "stable testing" versions of OpenWatcom from
+// https://openwatcom.org/ftp/source/ow_portable_v2_stable.zip
+// so __WATCOMC__ is not in the list here, but I'm actually not sure if they were defined in version 1.9.
+// If you're compiling with OpenWatcom 1.9, and get errors about uid_t and gid_t being unknown, add
+// "|| (defined(__WATCOMC__) && (__WATCOMC__ <= 1290))" to the list above, although I don't know if the
+// stable testing version actually incremented the __WATCOMC__ macro. I have no idea about the
+// OpenWatcom V2 Fork project, and whether it's the same codebase or not.
+// (In addition, I'm not sure why MinGW-w64 does not have these typedefs.)
+typedef int uid_t ;
+typedef int gid_t ;
 #endif
 
-/* Visual Studio has S_IREAD and S_IWRITE in sys/stat.h but not S_IRUSR and S_IWUSR */
 #if defined(_MSC_VER)
+
+// the OpenWatcom stable testing version seems to have these, so they are now only needed
+// for Visual Studio. If you are using OpenWatcom 1.9, you may need to add
+// "|| (defined(__WATCOMC__) && (__WATCOMC__ <= 1290))" to the #if defined(_MSC_VER) line above.
+typedef int mode_t ;
+#define	strcasecmp	stricmp
+
+// Visual Studio has S_IREAD and S_IWRITE in sys/stat.h but not S_IRUSR and S_IWUSR
 #define	S_IRUSR	S_IREAD
 #define	S_IWUSR	S_IWRITE
-#endif
 
-/* work around Visual Studio's issues */
-#if defined(_MSC_VER)
+// used for access()
+#define	F_OK	0
+#define	W_OK	2
+#define	R_OK	4
+
+// Visual Studio specific macros
 // disable warnings about using certain CRT functions (like fopen(), strcpy(), etc)
 #define _CRT_SECURE_NO_WARNINGS
 // disable warnings about using standard POSIX function names

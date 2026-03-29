@@ -18,10 +18,11 @@ typedef enum { DIRECTION_UNSET = 0, DIRECTION_UNIX2DOS = 1, DIRECTION_DOS2UNIX =
 /* macros */
 #define	EXIT_ERROR	1	/* exit code on error */
 
+// cannot use [[maybe_unused]] since Visual Studio 2026 does not support it for C code (yet)
+#define	UNUSED_VARIABLE(x)	((void)(x))
+
 /* global variables */
 extern int abortonerr ; /* 1 = abort list of files if error in any */
-extern int alwaysconvert ;	// relic of an earlier version that is accessed in lots of places
-							// (don't delete unless you root out all the references and re-test everything)
 extern char * current_input_filename ; // current input filename (for error messages)
 extern conversion_direction_t direction ;
 extern int forcewrite ; /* convert even if file is not writeable */
@@ -38,6 +39,13 @@ extern void make_filenames ( char * filename, char ** mkstemp_templatep, char **
 extern int parseargs ( int argc, char ** argv );
 extern int process_file ( char * filename );
 extern int resolve_filename_and_convert ( char * filename );
+
+#if defined(DECLARE_CHECK_AND_SAVE_FILE_INFO)
+	// we only declare this if needed, to avoid having to include utime.h, sys/types.h and sys/stat.h
+extern int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
+	struct utimbuf * filetimebufp, uid_t * ownerp, gid_t * groupp,
+	int * has_multiple_hard_linksp, int * need_to_make_writeablep );
+#endif
 
 #if defined(__cplusplus)
 }

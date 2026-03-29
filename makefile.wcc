@@ -72,7 +72,8 @@ TODOS = todos.exe
 LIBOBJS = $(LIBDIR)\getopt.obj &
 	$(LIBDIR)\mkstemp.obj &
 	$(LIBDIR)\wildargv.obj
-SYSOBJS = $(SYSDIR)\resolve_filename_and_convert.obj
+SYSOBJS = $(SYSDIR)\check_and_save_file_info.obj &
+	$(SYSDIR)\resolve_filename_and_convert.obj
 OBJS =	convert_file.obj &
 	emsg.obj &
 	init.obj &
@@ -82,7 +83,7 @@ OBJS =	convert_file.obj &
 	utility.obj
 
 # implicit rules
-.c: $(SRCDIR);$(LIBDIR);dos
+.c: $(SRCDIR);$(LIBDIR);$(SYSDIR)
 .h: $(SRCDIR);$(LIBDIR)
 .c.obj:	.AUTODEPEND
 	$(CC) $(CFLAGS) $(COUTFLAG)$@ $[@

@@ -8,7 +8,7 @@
 
 /* macros */
 #define	VERSN_MAJOR	2
-#define	VERSN_MINOR	0
+#define	VERSN_MINOR	1
 #define	VERSN_PATCH	0
 
 #define	VERSN_PROGNAME	"tofrodos"

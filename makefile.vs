@@ -20,7 +20,7 @@
 
 # The following is used for generating the binary distribution zip; override on the nmake command line.
 !ifndef VERSION
-VERSION = 2.0.0
+VERSION = 2.1.0
 !endif
 
 # Programs
@@ -69,7 +69,9 @@ TODOS = todos.exe
 TOFRODOS_BINARY_DIST = tofrodos-$(VERSION)-windows-x86-64.zip
 TOFRODOS_BINARY_DIST_CHECKSUM = $(TOFRODOS_BINARY_DIST).sha512
 
-OBJS =	convert_file.obj \
+OBJS =	check_and_save_file_info.obj \
+	convert_file.obj \
+	copy_file.obj \
 	emsg.obj \
 	init.obj \
 	getopt.obj \
@@ -127,9 +129,17 @@ mkstemp.obj: $(LIBDIR)\mkstemp.c
 	$(CC) $(CFLAGS) %s
 
 # main objs
+check_and_save_file_info.obj: $(SYSDIR)\check_and_save_file_info.c config.h emsg.h tofrodos.h
+	$(CC) $(CFLAGS) %s
+
 convert_file.obj: convert_file.c config.h emsg.h tofrodos.h
 
+copy_file.obj: copy_file.c copy_file.h
+
 emsg.obj: emsg.c config.h emsg.h tofrodos.h
+
+fromdos.1: man\manual-source.md man\man-metadata.txt
+	pandoc -s -t man -o $@ --metadata-file=man\man-metadata.txt %s
 
 init.obj: init.c config.h emsg.h tofrodos.h utility.h version.h $(LIBDIR)\getopt.h
 
@@ -141,9 +151,6 @@ resolve_filename_and_convert.obj: $(SYSDIR)\resolve_filename_and_convert.c confi
 	$(CC) $(CFLAGS) %s
 
 strip_path_prefix.obj: strip_path_prefix.c config.h utility.h
-
-fromdos.1: man\manual-source.md man\man-metadata.txt
-	pandoc -s -t man -o $@ --metadata-file=man\man-metadata.txt %s
 
 tofrodos.html: man\manual-source.md man\html-metadata.txt
 	pandoc -s -t html -o $@ --metadata-file=man\html-metadata.txt -V mainfont=Arial -V fontsize=16pt -V maxwidth=45em %s

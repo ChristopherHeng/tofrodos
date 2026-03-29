@@ -1,0 +1,1 @@
+fromdos: No write permission for "temp/subdir/altname.txt".

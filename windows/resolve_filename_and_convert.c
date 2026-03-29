@@ -72,11 +72,19 @@ int resolve_filename_and_convert ( char * filename )
 					error_resolving_symlink = 1 ;
 					break ;
 				}
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 				// Just a little sanity check; this requires a compiler that supports C11's static_assert()
-				// This test should pass on Windows because Windows compilers (Visual Studio and MinGW-w64's gcc)
-				// define unsigned long (DWORD) as having the same size as unsigned int (size_t),
-				// ie, 32-bits even on 64 bit systems.
+				// This test should pass on Windows because although Windows compilers (Visual Studio and MinGW-w64's gcc)
+				// define DWORD as unsigned long, this is the same size as unsigned int, ie, 32-bits even on 64 bit systems.
+				// In Visual Studio (and probably also MinGW-w64 which tries to follow VS for compatibility reasons and
+				// probably also because it relies on the Windows C runtime library), size_t is unsigned int on 32 bit systems
+				// and unsigned __int64 on 64 bit systems.
+				// https://learn.microsoft.com/en-us/cpp/c-runtime-library/standard-types?view=msvc-170
+				// Note that for Visual Studio, you must compile this source file with /std:c11 or /std:c17 or
+				// it will not define __STDC_VERSION__. Info from
+				// https://learn.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
 				static_assert( (sizeof(size_t) >= sizeof(DWORD)), "size_t cannot hold all the values of DWORD" );
+#endif
 				resolved_filename = xmalloc( (size_t) len );
 				// now really get the filename into our allocated space
 				len = GetFinalPathNameByHandleA( fh, resolved_filename, len, FILE_NAME_NORMALIZED );
@@ -118,7 +126,12 @@ static inline int safely_add_dword_operands( DWORD * result, DWORD first, DWORD 
 {
 	// DWORD is actually unsigned long in Windows
 	// info from: https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+	// Note that for Visual Studio, you must compile this source file with /std:c11 or /std:c17 or
+	// it will not define __STDC_VERSION__. Info from
+	// https://learn.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170
 	static_assert( (sizeof(unsigned long) == sizeof(DWORD)), "DWORD is not unsigned long as assumed" );
+#endif
 	if ((ULONG_MAX - first) >= second) {
 		*result = first + second ;
 		return 0 ;

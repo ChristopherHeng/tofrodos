@@ -60,7 +60,10 @@ an error. This option causes it to abort instead.
 
 : Convert the file even if it is not writeable (that is, it is read\-only). By default,
 if the program finds that the file does not have write permission, it will not process it.
-This option forces the conversion even if it is read\-only.
+This option forces the conversion even if it is read\-only. Note that on Unix-type systems,
+you must be the owner of the file for this to work, otherwise if you have root/sudo access,
+use **chmod** to make the file writeable. (Do not "sudo todos/fromdos"; it will not
+allow you to override the owner's permissions.)
 
 **\-h, \-\-help**
 
@@ -82,11 +85,9 @@ at the time the program checks the command line, it has still not set up the log
 **\-p, \-\-preserve**
 
 : Preserve file ownership and time on Unix\-type systems (like Linux, macOS, FreeBSD, etc).
-On Windows and MSDOS, it only preserves the file time. Note that on Unix\-type systems, the
-ownership will only be preserved if the program is run as root or via **sudo**, otherwise it
-will just set the file time and silently fail the change of ownership.
-If you want a warning message when the file ownership cannot be changed, set the verbose mode as well,
-using the "\-\-verbose" option.
+On Windows and MSDOS, it only preserves the file time. Note that on Unix\-type systems,
+this will only succeed if the program has the appropriate permissions to make such
+modifications.
 
 **\-u, \-\-unix2dos, \-\-todos**
 

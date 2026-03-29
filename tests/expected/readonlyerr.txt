@@ -1,1 +1,1 @@
-todos: No write permission for "temp\normal.txt". Use --force to force conversion.
+todos: "temp\normal.txt" is read-only. Use --force to force conversion.

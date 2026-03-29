@@ -1,0 +1,3 @@
+todos: No write permission for "temp/not-owned-readonly.txt".
+Unable to --force conversion, since you are not the owner of the file.
+If you have root/sudo access, use chmod to make the file writeable.

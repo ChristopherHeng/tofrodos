@@ -1,0 +1,1 @@
+todos: No write permission for "temp/not-owned-readonly.txt".

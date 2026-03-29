@@ -57,7 +57,9 @@ FROMDOSTXT = fromdos.txt
 TODOS = todos
 
 # lists of filenames
-OBJS =	convert_file.o \
+OBJS =	check_and_save_file_info.o \
+	convert_file.o \
+	copy_file.o \
 	emsg.o \
 	init.o \
 	make_filenames.o \
@@ -100,8 +102,16 @@ $(FROMDOSTXT): $(FROMDOSMAN)
 $(TODOS): $(FROMDOS)
 	$(LN) $(LNFLAGS) $(FROMDOS) $(TODOS)
 
+fromdos.1: man/manual-source.md man/man-metadata.txt
+	pandoc -s -t man -o $@ --metadata-file=man/man-metadata.txt $<
+
 # objects
+check_and_save_file_info.o: posix/check_and_save_file_info.c config.h emsg.h tofrodos.h
+	$(CC) $(CFLAGS) $<
+
 convert_file.o: convert_file.c config.h emsg.h tofrodos.h
+
+copy_file.o: copy_file.h
 
 init.o: init.c config.h emsg.h tofrodos.h utility.h version.h
 

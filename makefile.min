@@ -46,7 +46,9 @@ FROMDOS = fromdos.exe
 TODOS = todos.exe
 
 # lists of filenames
-OBJS =	convert_file.o \
+OBJS =	check_and_save_file_info.o \
+	convert_file.o \
+	copy_file.o \
 	emsg.o \
 	init.o \
 	make_filenames.o \
@@ -78,7 +80,12 @@ $(TODOS): $(FROMDOS)
 dowildcard.o: lib/dowildcard.c
 	$(CC) $(CFLAGS) $<
 
+check_and_save_file_info.o: windows/check_and_save_file_info.c config.h emsg.h tofrodos.h
+	$(CC) $(CFLAGS) $<
+
 convert_file.o: convert_file.c config.h emsg.h tofrodos.h
+
+copy_file.o: copy_file.c copy_file.h
 
 emsg.o: emsg.c config.h emsg.h tofrodos.h
 

@@ -215,6 +215,30 @@ test_read_only()
 	fi
 }
 
+test_read_only_non_owner()
+{
+	# check if we handle a read-only file that we don't own correctly
+	cp lf/utf8.txt temp/not-owned-readonly.txt
+	chmod o-w temp/not-owned-readonly.txt
+	sudo chown ${test_user}:${test_group} temp/not-owned-readonly.txt
+	tofrodos_cmd="../todos -l temp/notownederr-linux.txt temp/not-owned-readonly.txt"
+	${tofrodos_cmd} || true
+	if diff expected/notownederr-linux.txt temp/notownederr-linux.txt ; then
+		rm temp/notownederr-linux.txt
+		echo PASSED: ${tofrodos_cmd}
+	else
+		print_standard_fail_message
+	fi
+	tofrodos_cmd="../todos -l temp/notownedforceerr-linux.txt --force temp/not-owned-readonly.txt"
+	${tofrodos_cmd} || true
+	if diff expected/notownedforceerr-linux.txt temp/notownedforceerr-linux.txt ; then
+		rm -f temp/notownedforceerr-linux.txt temp/not-owned-readonly.txt
+		echo PASSED: ${tofrodos_cmd}
+	else
+		print_standard_fail_message
+	fi
+}
+
 test_backup()
 {
 	# test -b (or --backup)
@@ -292,6 +316,78 @@ test_non_standard_name()
 	print_standard_fail_message
 }
 
+test_hard_links()
+{
+	# this function is really ugly, but I cannot be bothered to do it properly;
+	# it is practically a transcription of my manual tests
+
+	local tofrodos_cmd="../fromdos temp/subdir/altname.txt"
+
+	cp crlf/utf8.txt temp
+	mkdir temp/subdir
+	ln temp/utf8.txt temp/subdir/altname.txt
+	${tofrodos_cmd} || true
+	if diff lf/utf8.txt temp/subdir/altname.txt ; then
+		if diff lf/utf8.txt temp/utf8.txt ; then
+			echo PASSED: "${tofrodos_cmd}"
+			chmod a-w temp/utf8.txt
+			tofrodos_cmd="../todos -l temp/nowritemulti-linux.txt temp/subdir/altname.txt"
+			${tofrodos_cmd} || true ;
+			if diff temp/nowritemulti-linux.txt expected/nowritemulti-linux.txt ; then
+				rm temp/nowritemulti-linux.txt
+				echo PASSED: "${tofrodos_cmd}"
+				tofrodos_cmd="../todos --force temp/subdir/altname.txt"
+				${tofrodos_cmd} || true ;
+				if diff crlf/utf8.txt temp/utf8.txt ; then
+					echo PASSED: "${tofrodos_cmd}"
+					sudo chown ${test_user}:${test_group} temp/utf8.txt
+					tofrodos_cmd="../fromdos -l temp/notownermulti-linux.txt temp/subdir/altname.txt"
+					${tofrodos_cmd} || true
+					if diff temp/notownermulti-linux.txt expected/notownermulti-linux.txt ; then
+						rm temp/notownermulti-linux.txt
+						echo PASSED: "${tofrodos_cmd}"
+						tofrodos_cmd="../fromdos --force -l temp/forcenowritefail-multi-linux.txt temp/subdir/altname.txt"
+						${tofrodos_cmd} || true
+						if diff temp/forcenowritefail-multi-linux.txt expected/forcenowritefail-multi-linux.txt ; then
+							rm temp/forcenowritefail-multi-linux.txt
+							echo PASSED: "${tofrodos_cmd}"
+							sudo chmod 666 temp/utf8.txt
+							tofrodos_cmd="../fromdos temp/subdir/altname.txt"
+							${tofrodos_cmd} || true
+							if diff lf/utf8.txt temp/utf8.txt ; then
+								echo PASSED: "${tofrodos_cmd}"
+								sudo touch "--date=2004-01-01 5:00:00" temp/utf8.txt
+								tofrodos_cmd="../todos -l temp/preservemulti-linux.txt --preserve temp/subdir/altname.txt"
+								${tofrodos_cmd} || true
+								if diff temp/preservemulti-linux.txt expected/preservemulti-linux.txt ; then
+									# Do not bother to check the file time. It will have failed since we are not the owner of the file.
+									# The error message file above will have shown it.
+									rm temp/preservemulti-linux.txt
+									echo PASSED: "${tofrodos_cmd}"
+									sudo touch "--date=2004-01-01 5:00:00" temp/utf8.txt temp/empty.txt
+									tofrodos_cmd="../fromdos --backup temp/utf8.txt"
+									${tofrodos_cmd} || true
+									# the backup file will have the file time preserved though not the owner
+									if [ ! temp/utf8.txt.bak -nt temp/empty.txt ] ; then
+										if diff lf/utf8.txt temp/subdir/altname.txt ; then
+											if diff crlf/utf8.txt temp/utf8.txt.bak ; then
+												echo PASSED: "${tofrodos_cmd}"
+												rm -f temp/empty.txt temp/utf8.txt.bak temp/utf8.txt temp/subdir/altname.txt
+												rmdir temp/subdir
+												return
+											fi
+										fi
+									fi
+								fi
+							fi
+						fi
+					fi
+				fi
+			fi
+		fi
+	fi
+	print_standard_fail_message
+}
 
 # start of script-proper
 
@@ -332,6 +428,7 @@ rm temp/dos2unix temp/unix2dos
 test_symlink
 test_preserve
 test_read_only
+test_read_only_non_owner
 test_backup
 test_exitonerror
 test_badfn_in_list
@@ -341,6 +438,8 @@ test_pipe
 cp ../todos temp/tofrodos
 test_non_standard_name
 rm temp/tofrodos
+
+test_hard_links
 
 if [ -f temp/test-fails-log.txt ] ; then
 	echo One or more tests FAILED. See temp/test-fails-log.txt.

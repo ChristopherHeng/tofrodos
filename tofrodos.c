@@ -14,7 +14,7 @@
 /* conditionally included headers */
 #if defined(MSDOS) || defined(WIN32)
 #include <fcntl.h>	/* O_BINARY */
-#include <io.h>		/* setmode(), isatty() */
+#include <io.h>		/* _setmode(), isatty() */
 #endif
 
 #if defined(HAVE_UNISTD_H)
@@ -36,8 +36,6 @@
 /* global variables */
 int abortonerr ;	/* 1 if should abort when there is error in any file */
 					/* in a list of files, 0 carry on (default) */
-int alwaysconvert ;	// relic of an earlier version that is accessed in lots of places
-					// (don't delete unless you root out all the references and re-test everything)
 conversion_direction_t direction = DIRECTION_UNSET ;
 int forcewrite ; /* convert even if file is not writeable */
 char * errorlogfilename ;	/* name of error log file, NULL if we're printing to stderr */
@@ -95,10 +93,9 @@ int main ( int argc, char ** argv )
 	    }
 	    /* otherwise stdin has been redirected */
 #if defined(MSDOS) || defined(WIN32)
-	    /* need to make sure the input and output files are binary */
-	    /* on MSDOS and WIN32 */
-	    setmode( fileno( stdin ), O_BINARY );
-	    setmode( fileno( stdout ), O_BINARY );
+		// need to make sure the input and output files are binary on MSDOS and Windows
+	    _setmode( fileno( stdin ), O_BINARY );
+	    _setmode( fileno( stdout ), O_BINARY );
 #endif
 	    return process_file( NULL ) ? EXIT_ERROR : EXIT_SUCCESS ;
 	}

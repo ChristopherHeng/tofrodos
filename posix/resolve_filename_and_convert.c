@@ -21,10 +21,10 @@
 	On a Unix-type system (including Linux and BSD systems), it is
 	possible for a given filename to be merely a symlink. This function
 	obtains the real filename given the symlink, and calls
-	openandconvert() with the real file name. It simply calls openandconvert()
+	process_file() with the real file name. It simply calls process_file()
 	if the filename is not a symlink.
 
-	Returns: whatever openandconvert() returns. (0 on success, -1 on
+	Returns: whatever process_file() returns. (0 on success, -1 on
 	error. Error messages will be displayed on error before returning.
 */
 int resolve_filename_and_convert ( char * filename )
