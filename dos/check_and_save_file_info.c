@@ -1,5 +1,5 @@
 /*
-	check_and_save_file_info.c
+	dos/check_and_save_file_info.c
 	Copyright 1996-2026 Christopher Heng. All rights reserved.
 */
 
@@ -29,9 +29,11 @@
 
 int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 	struct utimbuf * filetimebufp, uid_t * ownerp, gid_t * groupp,
-	int * has_multiple_hard_linksp, int * need_to_make_writeablep )
+	int * use_copy_and_convert_methodp, int * need_to_make_writeablep )
 {
 	struct stat statbuf ;
+
+	UNUSED_VARIABLE( use_copy_and_convert_methodp );
 
 	/* get the file information */
 	if (stat( filename, &statbuf )) {
@@ -48,7 +50,6 @@ int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 	// we actually don't use this in DOS
 	*ownerp = statbuf.st_uid ;
 	*groupp = statbuf.st_gid ;
-	*has_multiple_hard_linksp = 0 ;
 
 	/* check if file can be written to, if forcewrite is 0 */
 	if (access( filename, W_OK )) { // not writeable

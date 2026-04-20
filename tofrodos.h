@@ -35,7 +35,8 @@ extern int verbose ; /* 1 = be noisy, 0 = shut up */
 /* function prototypes */
 extern int convert_file( FILE * infp, FILE * outfp );
 extern int init ( char * firstarg );
-extern void make_filenames ( char * filename, char ** mkstemp_templatep, char ** backup_filenamep );
+extern int make_filenames( char * filename, char ** mkstemp_templatep, char ** backup_filenamep,
+	int * use_copy_and_convert_methodp );
 extern int parseargs ( int argc, char ** argv );
 extern int process_file ( char * filename );
 extern int resolve_filename_and_convert ( char * filename );
@@ -44,7 +45,7 @@ extern int resolve_filename_and_convert ( char * filename );
 	// we only declare this if needed, to avoid having to include utime.h, sys/types.h and sys/stat.h
 extern int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 	struct utimbuf * filetimebufp, uid_t * ownerp, gid_t * groupp,
-	int * has_multiple_hard_linksp, int * need_to_make_writeablep );
+	int * use_copy_and_convert_methodp, int * need_to_make_writeablep );
 #endif
 
 #if defined(__cplusplus)

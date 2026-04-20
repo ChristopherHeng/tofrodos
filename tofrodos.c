@@ -34,16 +34,15 @@
 #include "version.h"
 
 /* global variables */
-int abortonerr ;	/* 1 if should abort when there is error in any file */
-					/* in a list of files, 0 carry on (default) */
-conversion_direction_t direction = DIRECTION_UNSET ;
-int forcewrite ; /* convert even if file is not writeable */
-char * errorlogfilename ;	/* name of error log file, NULL if we're printing to stderr */
-int preserve ;	/* 1 if we are to preserve owner (Unix) and date (all) */
-char * progname = VERSN_PROGNAME ;/* name of binary (ie, argv[0] without a path prefix) */
-int overwrite = 1 ;	/* 1 = overwrite original file, 0 = make backup */
-int verbose ;
+int abortonerr ; // 1 = abort when there is error in any file; 0 skip to next file (default)
 char * current_input_filename ; // for error messages
+conversion_direction_t direction = DIRECTION_UNSET ;
+int forcewrite ; // convert even if file is not writeable 
+char * errorlogfilename ;	// name of error log file, NULL if we're printing to stderr
+int preserve ;	// 1 if we are to preserve owner (Unix) and date (all)
+char * progname = VERSN_PROGNAME ;
+int overwrite = 1 ;	// 1 = overwrite original file; 0 = make backup
+int verbose ;
 
 
 /*
@@ -62,53 +61,67 @@ int main ( int argc, char ** argv )
 {
 	int err ;
 	int parse_retval ;
+	int exit_code ;
 
-	/* initialise and parse the options */
-	if (init( argv[0] ))
-		return EXIT_ERROR ;
-	parse_retval = parseargs( argc, argv );
-	if (parse_retval == -1) {
-		return EXIT_ERROR ;
-	}
-	else if (parse_retval == 1) {
-		// user merely requested help or version info
-		// and it has already been displayed
-		return EXIT_SUCCESS ;
-	}
-	// else parse_retval == 0, and we can continue
+	do {
+		exit_code = EXIT_ERROR ;
 
-	// make sure we know which direction we are supposed to convert
-	if (direction == DIRECTION_UNSET) {
-		emsg( EMSG_NODIRECTION );
-		return EXIT_ERROR ;
-	}
+		/* initialise and parse the options */
+		if (init( argv[0] )) {
+			break ;
+		}
+		parse_retval = parseargs( argc, argv );
+		if (parse_retval == -1) {
+			break ;
+		}
+		else if (parse_retval == 1) {
+			// user merely requested help or version info
+			// and it has already been displayed
+			exit_code = EXIT_SUCCESS ;
+			break ;
+		}
+		// else parse_retval == 0, and we can continue
 
-	/* check if we are to convert from stdin */
-	if (argc == optind) {
-	    if (isatty( fileno( stdin ) )) {
-		/* stdin must be redirected else you should supply a */
-		/* filename. */
-		emsg( EMSG_NOFILENAME );
-		return EXIT_ERROR ;
-	    }
-	    /* otherwise stdin has been redirected */
-#if defined(MSDOS) || defined(WIN32)
-		// need to make sure the input and output files are binary on MSDOS and Windows
-	    _setmode( fileno( stdin ), O_BINARY );
-	    _setmode( fileno( stdout ), O_BINARY );
-#endif
-	    return process_file( NULL ) ? EXIT_ERROR : EXIT_SUCCESS ;
-	}
+		// make sure we know which direction we are supposed to convert
+		if (direction == DIRECTION_UNSET) {
+			emsg( EMSG_NODIRECTION );
+			exit_code = EXIT_ERROR ;
+			break ;
+		}
 
-	/* if we reach here, we have a (list?) of files to convert */
-	err = 0 ;
-	while (optind < argc) {
-	    if (verbose)
-			emsg( VERBOSE_CONVERTING, argv[optind] );
-	    if (((err = resolve_filename_and_convert( argv[optind] )) != 0) && abortonerr)
-			return EXIT_ERROR ;
-	    optind++ ;
-	}
+		/* check if we are to convert from stdin */
+		if (argc == optind) {
+		    if (isatty( fileno( stdin ) )) {
+			/* stdin must be redirected else you should supply a */
+			/* filename. */
+			emsg( EMSG_NOFILENAME );
+			exit_code = EXIT_ERROR ;
+			break ;
+		    }
+		    /* otherwise stdin has been redirected */
+	#if defined(MSDOS) || defined(WIN32)
+			// need to make sure the input and output files are binary on MSDOS and Windows
+		    _setmode( fileno( stdin ), O_BINARY );
+		    _setmode( fileno( stdout ), O_BINARY );
+	#endif
+		    exit_code = process_file( NULL ) ? EXIT_ERROR : EXIT_SUCCESS ;
+			break ;
+		}
 
-    return err ? EXIT_ERROR : EXIT_SUCCESS ;
+		/* if we reach here, we have a list of files (or just one) to convert */
+		err = 0 ;
+		while (optind < argc) {
+		    if (verbose)
+				emsg( VERBOSE_CONVERTING, argv[optind] );
+		    if (((err = resolve_filename_and_convert( argv[optind] )) != 0) && abortonerr) {
+				exit_code = EXIT_ERROR ;
+				break ;
+			}
+		    optind++ ;
+		}
+
+	    exit_code = err ? EXIT_ERROR : EXIT_SUCCESS ;
+	} while (0) ;
+
+	return exit_code ;
 }

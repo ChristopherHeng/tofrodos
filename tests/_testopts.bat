@@ -116,10 +116,10 @@ echo PASSED: %TOFRODOS_CMD%
 :TestOptp
 rem Test -p
 copy crlf\utf8-with-bom.txt temp > nul 2>&1
-..\set_test_filetime temp\utf8-with-bom.txt
+touch -d "2013-01-01 06:00:00Z" temp\utf8-with-bom.txt
 set TOFRODOS_CMD=..\fromdos -p temp\utf8-with-bom.txt
 %TOFRODOS_CMD%
-for %%i in (temp\utf8-with-bom.txt) do echo %%~ti > temp\filetime.txt
+..\print_file_times temp\utf8-with-bom.txt > temp\filetime.txt 2>&1
 set NEXT_TEST_LABEL=
 diff --ignore-case expected\filetime.txt temp\filetime.txt
 if errorlevel 1 goto FailedTest

@@ -13,6 +13,10 @@
 #include <stdio.h>	// fopen(), fclose(), fread(), fwrite(), size_t, remove()
 #include <stdlib.h>	// malloc(), free()
 
+#if !defined(__WIN32__) && !defined(__NT__) && !defined(_WIN32) && !defined(_WIN64) && !defined(__MSDOS__)
+#include <sys/stat.h>	// umask(), mode_t
+#endif
+
 #include "copy_file.h"
 
 #define	COPY_BUFFER_LEN	(32*1024)	// 32k buffer by default
@@ -43,6 +47,13 @@ copy_file_status_t copy_file ( char * source_file, char * dest_file )
 	int must_free ;
 	int dest_was_created ;
 	copy_file_status_t retval ;
+#if !defined(__WIN32__) && !defined(__NT__) && !defined(_WIN32) && !defined(_WIN64) && !defined(__MSDOS__)
+	mode_t old_umask ;
+#endif
+
+#if !defined(__WIN32__) && !defined(__NT__) && !defined(_WIN32) && !defined(_WIN64) && !defined(__MSDOS__)
+	old_umask = umask( S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH ); // only allow user to read/write file
+#endif
 
 	do {
 		src_fp = NULL ;
@@ -109,5 +120,10 @@ copy_file_status_t copy_file ( char * source_file, char * dest_file )
 	if ((retval != cp_no_error) && dest_was_created) {
 		remove( dest_file );
 	}
+
+#if !defined(__WIN32__) && !defined(__NT__) && !defined(_WIN32) && !defined(_WIN64) && !defined(__MSDOS__)
+	(void) umask( old_umask );
+#endif
+
 	return retval ;
 }

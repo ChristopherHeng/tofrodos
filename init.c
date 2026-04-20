@@ -42,8 +42,7 @@
 					"-V, --version\t\t\tShow version and quit.\n"
 #define	VERFMT		"%s Ver %d.%d.%d "\
 			"Converts text files between DOS and Unix formats.\n"\
-			"Copyright 1996-2026 Christopher Heng. "\
-                        "All rights reserved.\n"\
+			"Copyright 1996-2026 Christopher Heng. All rights reserved.\n"\
 			"https://github.com/ChristopherHeng/tofrodos\n"
 
 #if defined(MSDOS) || defined(WIN32)
@@ -157,7 +156,7 @@ int parseargs ( int argc, char ** argv )
 	char * orig_arg0 ;
 
 	orig_arg0 = argv[0] ;
-	argv[0] = progname ; // so that getopt() prints errors with the same name as our other error messages
+	argv[0] = progname ; // so that getopt_long() prints errors with the same name as our other error messages
 	retval = 0 ; // assume success, and that the caller should continue
 	while ((c = getopt_long( argc, argv, optstring, longopts, NULL )) != -1) {
 		switch( c ) {

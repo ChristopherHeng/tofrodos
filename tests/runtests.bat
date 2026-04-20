@@ -19,9 +19,11 @@ rem 2. GNU diff is required.
 
 setlocal
 
-rem Make sure that diff is available
+rem Make sure that diff and touch are available
 where /Q diff
 if "%ERRORLEVEL%" NEQ "0" goto NeedDiff
+where /Q touch
+if "%ERRORLEVEL%" NEQ "0" goto NeedTouch
 
 if not exist temp goto WrongDirectory
 if not exist crlf goto WrongDirectory
@@ -29,7 +31,7 @@ if not exist lf goto WrongDirectory
 if not exist expected goto WrongDirectory
 if not exist ..\todos.exe goto MustBuildFirst
 if not exist ..\fromdos.exe goto MustBuildFirst
-if not exist ..\set_test_filetime.exe goto MustBuildTools
+if not exist ..\print_file_times.exe goto MustBuildTools
 
 if "%1" == "all" goto StartTests
 goto ShowUsage
@@ -65,6 +67,11 @@ goto EndScript
 echo This script requires diff (from GNU diffutils).
 goto EndScript
 
+:NeedTouch
+echo This script requires touch. A Windows version can be obtained from
+echo https://github.com/ChristopherHeng/touch/releases
+goto EndScript
+
 :WrongDirectory
 echo This script must be executed with "tests" as the current working directory.
 goto EndScript
@@ -74,7 +81,7 @@ echo Build todos.exe and fromdos.exe before running this script.
 goto EndScript
 
 :MustBuildTools
-echo set_test_filetime.exe must first be built, eg with nmake -f makefile.vs set_test_filetime.exe
+echo print_file_times.exe must first be built, eg with nmake -f makefile.vs print_file_times.exe
 goto EndScript
 
 :ShowUsage

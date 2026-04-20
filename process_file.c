@@ -12,7 +12,7 @@
 #include <sys/stat.h>	// chmod(), stat()
 
 #if defined(HAVE_UNISTD_H)
-#include <unistd.h>	// chown(), mkstemp() on some systems
+#include <unistd.h>	// chown(), mkstemp() on some systems, access()
 #endif
 
 #if defined(_MSC_VER) || defined(__WATCOMC__)
@@ -44,14 +44,14 @@ extern int mkstemp ( char * templ );
 
 // local functions
 #if defined(UNIX) || defined(WIN32)
-static inline int set_up_for_multiple_hard_links( char * filename, char * tempfilename,
+static inline int set_up_for_copy_and_convert( char * filename, char * tempfilename,
 	mode_t origfilemode, int need_to_make_writeable, FILE ** infp_p, FILE ** outfp_p );
-static inline void clean_up_for_multiple_hard_links( int has_error_in_conversion, char * filename, char * tempfilename,
+static inline void clean_up_for_copy_and_convert( int has_error_in_conversion, char * filename, char * tempfilename,
 	char * bakfilename, mode_t origfilemode, struct utimbuf	* filetimebufp, uid_t ownerid, gid_t groupid );
 #endif
-static inline int set_up_for_normal_file( char * filename, char * tempfilename,
+static inline int set_up_for_convert_and_rename( char * filename, char * tempfilename,
 	int * tempfiledesp, FILE ** infp_p, FILE ** outfp_p );
-static inline void clean_up_for_normal_file( int has_error_in_conversion, char * filename, char * tempfilename,
+static inline void clean_up_for_convert_and_rename( int has_error_in_conversion, char * filename, char * tempfilename,
 	char * bakfilename, mode_t origfilemode, struct utimbuf	* filetimebufp,
 	uid_t ownerid, gid_t groupid );
 
@@ -77,7 +77,7 @@ int process_file ( char * filename )
 	struct utimbuf	filetimebuf ;
 	uid_t			ownerid ;
 	gid_t			groupid ;
-	int				has_multiple_hard_links ;
+	int				use_copy_and_convert_method ;
 	int				need_to_make_writeable ;
 
 	// make sure we initialise so that we know what to free/close/etc later
@@ -87,12 +87,13 @@ int process_file ( char * filename )
 	infp = NULL ;
 	outfp = NULL ;
 	err = 0 ;
+	use_copy_and_convert_method = 0 ; // default to convert and rename
 
 	do {
 		if (filename != NULL) { /* stdin is not redirected */
 
 			if (check_and_save_file_info( filename, &origfilemode, &filetimebuf, &ownerid, &groupid,
-				&has_multiple_hard_links, &need_to_make_writeable )) {
+				&use_copy_and_convert_method, &need_to_make_writeable )) {
 				err = -1 ;
 				break ;
 			}
@@ -100,7 +101,10 @@ int process_file ( char * filename )
 			// generate the mkstemp() template in the same directory as filename
 			// and if overwrite == 0 (user wants a backup file), generate the
 			// backup filename as well
-			make_filenames( filename,  &tempfilename, (overwrite ? NULL : &bakfilename) );
+			if ((err = make_filenames( filename,  &tempfilename, (overwrite ? NULL : &bakfilename),
+				&use_copy_and_convert_method )) == -1) {
+				break ;
+			}
 
 		    /* create the temporary file */
 		    if ((tempfiledes = mkstemp( tempfilename )) == -1) {
@@ -122,21 +126,21 @@ int process_file ( char * filename )
 #endif
 
 #if defined(UNIX) || defined(WIN32)
-			if (has_multiple_hard_links) {
+			if (use_copy_and_convert_method) {
 				close( tempfiledes );
 				tempfiledes = -1 ;
 				if (verbose) {
-					emsg( VERBOSE_HARDLINKS, filename );
+					emsg( VERBOSE_ALTMETHOD, filename );
 				}
-				err = set_up_for_multiple_hard_links( filename, tempfilename,
+				err = set_up_for_copy_and_convert( filename, tempfilename,
 						origfilemode, need_to_make_writeable, &infp, &outfp );
 			}
 			else {
 				// if we reach this point, it's not a file with more than one hard link
-				err = set_up_for_normal_file( filename, tempfilename, &tempfiledes, &infp, &outfp );
+				err = set_up_for_convert_and_rename( filename, tempfilename, &tempfiledes, &infp, &outfp );
 			}
 #else	// MSDOS
-			err = set_up_for_normal_file( filename, tempfilename, &tempfiledes, &infp, &outfp );
+			err = set_up_for_convert_and_rename( filename, tempfilename, &tempfiledes, &infp, &outfp );
 #endif
 
 		} /* if filename != NULL */
@@ -150,7 +154,6 @@ int process_file ( char * filename )
 			memset( &filetimebuf, 0, sizeof( struct utimbuf ) );
 			ownerid = 0 ;
 			groupid = 0 ;
-			has_multiple_hard_links = 0 ;
 			need_to_make_writeable = 0 ;
 		}
 		if (err) {
@@ -173,16 +176,16 @@ int process_file ( char * filename )
 		if (filename != NULL) { /* stdin was not redirected */
 
 #if defined(UNIX) || defined(WIN32)
-			if (has_multiple_hard_links) {
-				clean_up_for_multiple_hard_links( err, filename, tempfilename, bakfilename,
+			if (use_copy_and_convert_method) {
+				clean_up_for_copy_and_convert( err, filename, tempfilename, bakfilename,
 					origfilemode, &filetimebuf, ownerid, groupid );
 			}
 			else {
-				clean_up_for_normal_file( err, filename, tempfilename, bakfilename,
+				clean_up_for_convert_and_rename( err, filename, tempfilename, bakfilename,
 					origfilemode, &filetimebuf, ownerid, groupid );
 			}
 #else	// MSDOS only
-			clean_up_for_normal_file( err, filename, tempfilename, bakfilename,
+			clean_up_for_convert_and_rename( err, filename, tempfilename, bakfilename,
 				origfilemode, &filetimebuf, ownerid, groupid );
 #endif
 		}	/* stdin was not redirected */
@@ -203,7 +206,7 @@ int process_file ( char * filename )
 }
 
 #if defined(UNIX) || defined(WIN32)
-static inline int set_up_for_multiple_hard_links( char * filename, char * tempfilename,
+static inline int set_up_for_copy_and_convert( char * filename, char * tempfilename,
 	mode_t origfilemode, int need_to_make_writeable, FILE ** infp_p, FILE ** outfp_p )
 {
 	int copy_retval ;
@@ -277,7 +280,7 @@ static inline int set_up_for_multiple_hard_links( char * filename, char * tempfi
 }
 #endif
 
-static inline int set_up_for_normal_file( char * filename, char * tempfilename,
+static inline int set_up_for_convert_and_rename( char * filename, char * tempfilename,
 	int * tempfiledesp, FILE ** infp_p, FILE ** outfp_p )
 {
 	int retval ;
@@ -318,7 +321,7 @@ static inline int set_up_for_normal_file( char * filename, char * tempfilename,
 }
 
 #if defined(UNIX) || defined(WIN32)
-static inline void clean_up_for_multiple_hard_links( int has_error_in_conversion, char * filename, char * tempfilename,
+static inline void clean_up_for_copy_and_convert( int has_error_in_conversion, char * filename, char * tempfilename,
 	char * bakfilename, mode_t origfilemode, struct utimbuf	* filetimebufp, uid_t ownerid, gid_t groupid )
 {
 #if defined(WIN32)
@@ -385,7 +388,7 @@ static inline void clean_up_for_multiple_hard_links( int has_error_in_conversion
 }
 #endif
 
-static inline void clean_up_for_normal_file( int has_error_in_conversion, char * filename, char * tempfilename,
+static inline void clean_up_for_convert_and_rename( int has_error_in_conversion, char * filename, char * tempfilename,
 	char * bakfilename, mode_t origfilemode, struct utimbuf	* filetimebufp,
 	uid_t ownerid, gid_t groupid )
 {

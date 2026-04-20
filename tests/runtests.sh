@@ -389,6 +389,44 @@ test_hard_links()
 	print_standard_fail_message
 }
 
+test_notwriteable_dir()
+{
+	local tofrodos_cmd="../todos temp/subdir/utf8.txt"
+
+	mkdir temp/subdir
+	cp lf/utf8.txt temp/subdir
+	chmod 755 temp/subdir
+	sudo chown ${test_user}:${test_group} temp/subdir
+	${tofrodos_cmd} || true
+	if diff crlf/utf8.txt temp/subdir/utf8.txt ; then
+		echo PASSED: "${tofrodos_cmd}"
+		tofrodos_cmd="../fromdos -l temp/nw-err-linux.txt --backup temp/subdir/utf8.txt"
+		${tofrodos_cmd} || true
+		if diff temp/nw-err-linux.txt expected/nw-err-linux.txt ; then
+			echo PASSED: "${tofrodos_cmd}"
+			rm temp/nw-err-linux.txt
+			ln temp/subdir/utf8.txt temp/altname.txt
+			tofrodos_cmd="../fromdos temp/subdir/utf8.txt"
+			${tofrodos_cmd} || true
+			if diff temp/altname.txt lf/utf8.txt ; then
+				echo PASSED: "${tofrodos_cmd}"
+				cp crlf/utf8.txt temp/altname.txt
+				tofrodos_cmd="../fromdos -l temp/nw-err-linux.txt --backup temp/subdir/utf8.txt"
+				${tofrodos_cmd} || true
+				if diff temp/nw-err-linux.txt expected/nw-err-linux.txt ; then
+					echo PASSED: "${tofrodos_cmd}"
+					rm temp/nw-err-linux.txt
+					rm temp/altname.txt
+					sudo rm temp/subdir/utf8.txt
+					rmdir temp/subdir
+					return
+				fi
+			fi
+		fi
+	fi
+	print_standard_fail_message
+}
+
 # start of script-proper
 
 test_user=nobody
@@ -440,6 +478,7 @@ test_non_standard_name
 rm temp/tofrodos
 
 test_hard_links
+test_notwriteable_dir
 
 if [ -f temp/test-fails-log.txt ] ; then
 	echo One or more tests FAILED. See temp/test-fails-log.txt.

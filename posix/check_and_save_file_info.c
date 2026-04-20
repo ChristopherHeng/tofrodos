@@ -1,5 +1,5 @@
 /*
-	check_and_save_file_info.c
+	posix/check_and_save_file_info.c
 	Copyright 1996-2026 Christopher Heng. All rights reserved.
 */
 
@@ -64,7 +64,7 @@
 
 int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 	struct utimbuf * filetimebufp, uid_t * ownerp, gid_t * groupp,
-	int * has_multiple_hard_linksp, int * need_to_make_writeablep )
+	int * use_copy_and_convert_methodp, int * need_to_make_writeablep )
 {
 	struct stat statbuf ;
 	uid_t user_id ;
@@ -87,15 +87,10 @@ int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 
 	if (statbuf.st_nlink > 1) {
 		// file has more than one hard link
-		*has_multiple_hard_linksp = 1 ;
-	}
-	else {
-		*has_multiple_hard_linksp = 0 ;
+		*use_copy_and_convert_methodp = 1 ;
 	}
 
 	// check if file can be read by the current user
-	// on Windows/MSDOS, this check is pointless; access() on Windows only checks the read-only flag,
-	// and not the security settings.
 	if (access( filename, R_OK )) {
 		emsg( EMSG_NOTREADABLE, filename );
 		return -1 ;

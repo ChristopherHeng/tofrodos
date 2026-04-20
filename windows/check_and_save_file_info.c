@@ -1,5 +1,5 @@
 /*
-	check_and_save_file_info.c
+	windows/check_and_save_file_info.c
 	Copyright 1996-2026 Christopher Heng. All rights reserved.
 */
 
@@ -30,7 +30,7 @@
 
 int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 	struct utimbuf * filetimebufp, uid_t * ownerp, gid_t * groupp,
-	int * has_multiple_hard_linksp, int * need_to_make_writeablep )
+	int * use_copy_and_convert_methodp, int * need_to_make_writeablep )
 {
 	struct stat statbuf ;
 	HANDLE fh ;
@@ -87,17 +87,14 @@ int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 			FILE_ATTRIBUTE_NORMAL, // dwFlagsAndAttributes
 			NULL );
 		if (fh == INVALID_HANDLE_VALUE) {
-			// don't use EMSG_OPENFIL but be more specific since we're opening at this stage
-			// to get file info. (Easier to pinpoint the location of failure.)
+			// don't use EMSG_OPENFILE but be more specific since we're opening at this stage
+			// to get file info. (This makes it easier to pinpoint the location of/reason for failure.)
 			emsg( EMSG_FILEINFO, filename );
 			break ;
 		}
 		if (GetFileInformationByHandle( fh, &file_info )) {
 			if (file_info.nNumberOfLinks > 1) {
-				*has_multiple_hard_linksp = 1 ;
-			}
-			else {
-				*has_multiple_hard_linksp = 0 ;
+				*use_copy_and_convert_methodp = 1 ;
 			}
 		}
 		else {

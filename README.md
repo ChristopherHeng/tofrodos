@@ -5,9 +5,9 @@
 - [What is Tofrodos?](#intro)
 - [How to Use Tofrodos](#howtouse)
 - [How to Install Tofrodos](#install)
+	- [Linux, macOS and Unix-type Systems](#instunix)
 	- [Windows](#instwin)
 	- [MSDOS, FreeDOS and Clones](#instdos)
-	- [Linux, macOS and Unix-type Systems](#instunix)
 - [Compiling Tofrodos for Linux, macOS and Unix-type Systems](#bldunix)
 - [Compiling Tofrodos for Windows](#bldwin)
 - [Compiling Tofrodos for MSDOS](#blddos)
@@ -75,6 +75,16 @@ Tofrodos in the usual way, type `man fromdos` or
 
 ## <a id="install"></a>How to Install Tofrodos
 
+### <a id="instunix"></a>Linux, macOS and Unix-type Systems
+
+If you use Linux, you may be able to get tofrodos from your distribution's
+repository. For example, on Ubuntu, install it with
+
+	sudo apt install tofrodos
+
+Alternatively, you can also compile it youself. See the section
+[Compiling Tofrodos for Linux, macOS and Unix-type Systems](#bldunix).
+
 ### <a id="instwin"></a>Windows
 
 Download the binary distribution files from the [tofrodos
@@ -104,18 +114,7 @@ for more information.
 You will need to compile the sources. See the section
 [Compiling Tofrodos for MSDOS](#blddos).
 
-### <a id="instunix"></a>Linux, macOS and Unix-type Systems
-
-See the section
-[Compiling Tofrodos for Linux, macOS and Unix-type Systems](#bldunix).
-
 ## <a id="bldunix"></a>Compiling Tofrodos for Linux, macOS and Unix-type Systems
-
-I've stopped distributing precompiled versions of Tofrodos for
-Linux for two main reasons. There are just too many distributions
-to compile for and it's a simple matter to do it yourself. The
-process is painless and fast, since the source code compiles
-out-of-the-box.
 
 First, get the source code from the Tofrodos repository at  
 https://www.github.com/ChristopherHeng/tofrodos
@@ -127,7 +126,8 @@ Then, to compile everything, just type:
 
 	make -f makefile.gcc all
 
-You can then install by typing
+You can then install the binaries to /usr/bin and the man pages
+to /usr/man/man1 by typing:
 
 	make -f makefile.gcc install
 
@@ -136,7 +136,7 @@ system directories with this command, you'll need to be
 logged in as root. (I know this is stating the obvious,
 but it's just in case you're new to installing programs.)
 
-To install them somewhere other than /usr/bin and /usr/man/man1,
+To install them somewhere other than the defaults,
 redefine BINDIR and MANDIR for the binary and manual page
 destinations respectively. For example, to install the binaries
 in /usr/local/bin and the manual page in /usr/local/man/man1,
@@ -195,8 +195,8 @@ The distribution binaries were compiled with Visual Studio.
 
 ## <a id="blddos"></a>Compiling Tofrodos for MSDOS
 
-To cross-compile for MSDOS, you will need OpenWatcom C/C++. You will
-need to compile from Windows, rather than MSDOS, since many of the
+To cross-compile for MSDOS, you will need OpenWatcom C/C++
+and compile from Windows, rather than MSDOS, since many of the
 files have longer filenames than MSDOS can handle.
 
 First, get the source zip from
@@ -234,10 +234,11 @@ and object files will be wrong for the new target.
 Note that the sources are configured for compilation with the
 "stable testing" version of OpenWatcom as found on
 https://openwatcom.org/ftp/source/ow_portable_v2_stable.zip
-If you are using the earlier version 1.9, you may have to tweak
-`config.h` to define some compatibility macros and typedefs. I have
-added instructions to that file on what to do if you compile with
-that old version.
+The version I used identified itself as "Version 2.0beta1 LA".
+If you are using the earlier version 1.9, you may or may not have
+to tweak `config.h` to define some compatibility macros and typedefs.
+I have added information to that file on what to do if you compile with
+the old version and get errors.
 
 ## <a id="porting"></a>Porting to Other Systems
 
@@ -257,6 +258,11 @@ with people using it on macOS, FreeBSD, HP-UX and others.
 
 The dates given are when the code base was finalised and do not
 necessarily refer to the date of public release.
+
+Version 2.1.1 20 Apr 2026
+- [Unix-type systems] fixed bug where Tofrodos was unable to
+convert a file in a directory that is not writeable by the user,
+even though the file itself is writeable.
 
 Version 2.1.0 29 Mar 2026
 - [All systems except MSDOS] fixed bug where Tofrodos would

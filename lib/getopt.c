@@ -8,7 +8,9 @@
 	Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
 	USA.
 
-	Last updated: 20 March 2026.
+	Last updated: 10 April 2026:
+	- disable warning from clang about cast removing const
+	- added cast to size_t
 */
 /*
 	int getopt_long ( int argc, char * const * argv, const char * optstring,
@@ -126,6 +128,8 @@
 #if defined(__clang__)
 // disable warnings about unsafe buffer access and unsafe pointer arithmetic
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+// disable warnings about cast from "char * const *" to "char **" dropping const qualifier
+#pragma clang diagnostic ignored "-Wcast-qual"
 #endif
 
 #include <stdio.h>	// fprintf()
@@ -482,7 +486,7 @@ static int process_long_opt( int argc, char * const * argv, const struct option 
 	arg = strchr( curptr, (int) '=' );
 	if (arg != NULL) {
 		// adjust the option name length to account for the fact that it has an argument
-		len_of_opt_name = arg - curptr ;
+		len_of_opt_name = (size_t) (arg - curptr) ;
 		arg++ ; // skip past '='
 	}
 

@@ -20,7 +20,7 @@
 
 # The following is used for generating the binary distribution zip; override on the nmake command line.
 !ifndef VERSION
-VERSION = 2.1.0
+VERSION = 2.1.1
 !endif
 
 # Programs
@@ -93,12 +93,12 @@ OBJS =	check_and_save_file_info.obj \
 all: $(FROMDOS) $(TODOS)
 
 clean:
-	$(RM) $(OBJS) set_test_filetime.obj
+	$(RM) $(OBJS) print_file_times.obj
 
 clobber: clean
-	$(RM) $(FROMDOS) $(TODOS) tofrodos-*.zip tofrodos-*.sha512 set_test_filetime.exe readme.html fromdos.1 tofrodos.html
+	$(RM) $(FROMDOS) $(TODOS) tofrodos-*.zip tofrodos-*.sha512 print_file_times.exe readme.html fromdos.1 tofrodos.html
 
-test: $(FROMDOS) $(TODOS) set_test_filetime.exe
+test: $(FROMDOS) $(TODOS) print_file_times.exe
 	cd tests
 	runtests all
 
@@ -112,7 +112,7 @@ $(FROMDOS): $(OBJS)
 $(TODOS): $(FROMDOS)
 	$(CP) %s $@
 
-set_test_filetime.exe: tests\tools\set_test_filetime.c
+print_file_times.exe: tests\tools\print_file_times.c
 	cl /nologo /W4 /WX /O2 /D "NDEBUG" /D "_CONSOLE" /D "WIN32" /D "_MBCS" /MT /utf-8 /std:c17 %s
 
 $(TOFRODOS_BINARY_DIST): $(TODOS) $(FROMDOS) readme.html tofrodos.html COPYING-GPL2.txt COPYING-GPL3.txt

@@ -58,13 +58,18 @@ extern "C" {
 								"the file \"%s\". You may recover its content by copying it back into the original.\n"
 #define	EMSG_FILEINFO		"Unable to get file information from the system about \"%s\".\n"
 
+#define	EMSG_DIRNOTWRITEABLE	"Unable to back up %s because the directory it is in is not writeable.\n"\
+								"Aborted. Your file was not changed.\n"
+#define	EMSG_TMPDIR			"Unable to create file in the temporary directory to convert %s.\n"
+
 /* internal error macros */
 #define	EINTNL_DIRECTION	"unknown conversion direction"
 
 /* verbose messages */
 #define	VERBOSE_CONVERTING	"Converting \"%s\"\n"
 #define	VERBOSE_SYMLINKSRC	"\"%s\" resolves to \"%s\"\n"
-#define	VERBOSE_HARDLINKS	"\"%s\" has multiple hard links. Using alternative method to convert.\n"
+#define	VERBOSE_ALTMETHOD	"\"%s\" either has multiple hard links or is in a directory you don't\n"\
+							"have write access. Using alternative method to convert.\n"
 
 /* function declarations */
 extern void emsg ( char * message, ... );
