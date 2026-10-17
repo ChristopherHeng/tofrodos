@@ -62,8 +62,9 @@ check_make_done_for()
 
 print_standard_fail_message()
 {
+	# we inherit the local variables of our parent tofrodos_cmd
 	echo FAILED: "${tofrodos_cmd}"
-	echo "${tofrodos_cmd}" >> temp/test-fails-log.txt
+	echo FAILED: "${tofrodos_cmd}" >> temp/test-fails-log.txt
 }
 
 convert_and_compare()
@@ -102,10 +103,12 @@ test_symlink()
 
 	mkdir temp/subdir
 	cp lf/normal.txt temp/subdir
-	ln -s $(pwd)/temp/subdir/normal.txt temp/symlink_to_normal.txt
+	ln -s $(pwd)/temp/subdir/normal.txt temp/subdir/intermediate.txt
+	ln -s $(pwd)/temp/subdir/intermediate.txt temp/symlink_to_normal.txt
 	${tofrodos_cmd} || true
 	if diff --binary temp/subdir/normal.txt crlf/normal.txt ; then
 		rm temp/symlink_to_normal.txt
+		rm temp/subdir/intermediate.txt
 		rm temp/subdir/normal.txt
 		rmdir temp/subdir
 		echo PASSED: "${tofrodos_cmd}"
@@ -427,6 +430,56 @@ test_notwriteable_dir()
 	print_standard_fail_message
 }
 
+prep_recur_test()
+{
+	mkdir temp/recur temp/symtarget temp/recur/docs temp/recur/lib temp/recur/sys temp/recur/sys/posix temp/recur/sys/excl
+	cp lf/utf8.txt temp/recur/abc.c
+	cp lf/utf8.txt temp/recur/def.h
+	cp lf/utf8.txt temp/recur/otherext.for
+	cp lf/utf8.txt temp/recur/docs/readme.txt
+	cp lf/utf8.txt temp/recur/docs/dontconvert.txt
+	cp lf/utf8.txt temp/recur/lib/common.c
+	cp lf/utf8.txt temp/recur/sys/ghi.c
+	cp lf/utf8.txt temp/recur/sys/posix/jkl.c
+	cp lf/utf8.txt temp/recur/sys/excl/oops.c
+	cp lf/utf8.txt temp/symtarget/target.c
+	ln -s $(pwd)/temp/symtarget/target.c temp/intermediate.c
+	ln -s $(pwd)/temp/intermediate.c temp/recur/lib/symlinked.c
+}
+
+test_recur()
+{
+	local tofrodos_cmd="../todos -r -ic -ih -itxt -xdontconvert.txt -Xexcl temp/recur"
+	local diff_failed=0
+
+	prep_recur_test
+	${tofrodos_cmd} || true
+	for file in temp/recur/*.c temp/recur/*.h temp/recur/docs/readme.txt temp/recur/lib/common.c temp/recur/sys/*.c temp/recur/sys/posix/*.c temp/symtarget/target.c ; do
+		if ! diff crlf/utf8.txt "$file" ; then
+			echo "Recursive test failed at $file"
+			echo "Recursive test failed at $file" >> temp/test-fails-log.txt
+			diff_failed=1
+			break
+		fi
+	done
+	if [ ${diff_failed} == 0 ] ; then
+		for file in temp/recur/docs/dontconvert.txt temp/recur/otherext.for temp/recur/sys/excl/oops.c ; do
+			if ! diff lf/utf8.txt "$file" ; then
+				echo "Recursive test failed on $file"
+				echo "Recursive test failed on $file" >> temp/test-fails-log.txt
+				diff_failed=1
+				break
+			fi
+		done
+	fi
+	if [ ${diff_failed} == 1 ] ; then
+		print_standard_fail_message
+	else
+		echo "PASSED: ${tofrodos_cmd}"
+		rm -rf temp/recur temp/symtarget temp/intermediate.c
+	fi
+}
+
 # start of script-proper
 
 test_user=nobody
@@ -479,6 +532,7 @@ rm temp/tofrodos
 
 test_hard_links
 test_notwriteable_dir
+test_recur
 
 if [ -f temp/test-fails-log.txt ] ; then
 	echo One or more tests FAILED. See temp/test-fails-log.txt.

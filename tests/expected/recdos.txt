@@ -1,0 +1,30 @@
+TODOS: Recursing through temp\recur
+TODOS: Converting "temp\recur\ABC.C"
+TODOS: Converting "temp\recur\DEF.C"
+TODOS: Converting "temp\recur\GHI.C"
+TODOS: Converting "temp\recur\ABC.H"
+TODOS: Converting "temp\recur\ETC.H"
+TODOS: Skipping excluded file: NOCONVRT.TXT
+TODOS: Converting "temp\recur\README.TXT"
+TODOS: Recursing through temp\recur\DOS
+TODOS: Converting "temp\recur\DOS\FREEDOS.C"
+TODOS: Recursing through temp\recur\LIB
+TODOS: Converting "temp\recur\LIB\FILE.C"
+TODOS: Converting "temp\recur\LIB\SOME.C"
+TODOS: Recursing through temp\recur\POSIX
+TODOS: Converting "temp\recur\POSIX\P1.C"
+TODOS: Converting "temp\recur\POSIX\P2.C"
+TODOS: Converting "temp\recur\POSIX\PH.H"
+TODOS: Recursing through temp\recur\POSIX\BSD
+TODOS: Converting "temp\recur\POSIX\BSD\FREE.C"
+TODOS: Converting "temp\recur\POSIX\BSD\OPEN.C"
+TODOS: Converting "temp\recur\POSIX\BSD\NET.H"
+TODOS: Recursing through temp\recur\POSIX\LINUX
+TODOS: Converting "temp\recur\POSIX\LINUX\LX.C"
+TODOS: Converting "temp\recur\POSIX\LINUX\G.H"
+TODOS: Recursing through temp\recur\POSIX\MACOS
+TODOS: Converting "temp\recur\POSIX\MACOS\MAC.MD"
+TODOS: Skipping excluded directory: PRIVATE
+TODOS: Skipping excluded directory: SECRET
+TODOS: Recursing through temp\recur\WINDOWS
+TODOS: Converting "temp\recur\WINDOWS\W1.C"

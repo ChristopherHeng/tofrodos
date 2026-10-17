@@ -1,7 +1,7 @@
 # makefile.min	Makefile for building with the MinGW-w64 GNU C Compiler.
 # Copyright (c) 1996-2026 by Christopher Heng. All rights reserved.
 
-# This makefile requires the GNU make to work (the GNU extensions are used).
+# This makefile requires GNU make to work (the GNU extensions are used).
 # Note that this is the MinGW-w64 makefile. For Linux, please use makefile.gcc instead.
 # More information on compiling can be found in README.md.
 
@@ -46,15 +46,20 @@ FROMDOS = fromdos.exe
 TODOS = todos.exe
 
 # lists of filenames
-OBJS =	check_and_save_file_info.o \
+OBJS =	add_to_sorted_array.o \
+	append_to_path_prefix.o \
+	check_and_save_file_info.o \
 	convert_file.o \
 	copy_file.o \
 	emsg.o \
 	init.o \
+	item_is_in_array.o \
 	make_filenames.o \
 	process_file.o \
+	recursively_process.o \
 	resolve_filename_and_convert.o \
 	strip_path_prefix.o \
+	strip_trailing_dir_separators.o \
 	tofrodos.o \
 	utility.o \
 	dowildcard.o
@@ -80,6 +85,10 @@ $(TODOS): $(FROMDOS)
 dowildcard.o: lib/dowildcard.c
 	$(CC) $(CFLAGS) $<
 
+add_to_sorted_array.o: add_to_sorted_array.c config.h emsg.h safely_add_size_t_operands.h tofrodos.h
+
+append_to_path_prefix.o: append_to_path_prefix.c config.h safely_add_size_t_operands.h tofrodos.h
+
 check_and_save_file_info.o: windows/check_and_save_file_info.c config.h emsg.h tofrodos.h
 	$(CC) $(CFLAGS) $<
 
@@ -91,14 +100,21 @@ emsg.o: emsg.c config.h emsg.h tofrodos.h
 
 init.o: init.c config.h emsg.h tofrodos.h utility.h version.h
 
-make_filenames.o: make_filenames.c config.h emsg.h tofrodos.h utility.h
+item_is_in_array.o: item_is_in_array.c config.h tofrodos.h
+
+make_filenames.o: make_filenames.c config.h emsg.h safely_add_size_t_operands.h tofrodos.h utility.h
 
 process_file.o: process_file.c config.h emsg.h tofrodos.h utility.h
+
+recursively_process.o: windows/recursively_process.c config.h emsg.h tofrodos.h
+	$(CC) $(CFLAGS) $<
 
 resolve_filename_and_convert.o: windows/resolve_filename_and_convert.c config.h emsg.h tofrodos.h utility.h
 	$(CC) $(CFLAGS) $<
 
 strip_path_prefix.o: strip_path_prefix.c config.h utility.h
+
+strip_trailing_dir_separators.o: strip_trailing_dir_separators.c config.h tofrodos.h
 
 tofrodos.o: tofrodos.c config.h emsg.h tofrodos.h utility.h version.h
 

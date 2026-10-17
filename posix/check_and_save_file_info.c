@@ -43,7 +43,8 @@
 	value is saved in the variable pointed to by origfilemodep.
 
 	On Windows and Unix-type systems, if the file has multiple hard
-	links, we save that information in has_multipe_hard_linksp.
+	links, we set *use_copy_and_convert_methodp to 1 to flag that
+	the alternate method of conversion is needed.
 
 	On Windows and Unix-type systems, if the file has no write
 	permissions for the current user but is nonetheless owned

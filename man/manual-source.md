@@ -4,8 +4,11 @@ Tofrodos \- convert text files between DOS and Unix formats.
 
 # SYNOPSIS
 
-**fromdos** [*options*] [*file...*]  
-**todos** [*options*] [*file...*]  
+**fromdos** [*general options*] [*file*]...  
+**todos** [*general options*] [*file*]...  
+
+**fromdos** *\-r* *\-i ext* [*\-i ext*]... [*\-x file*]... [*\-X dir*]... [*general options*] [*dir*]...  
+**todos** *\-r* *\-i ext* [*\-i ext*]... [*\-x file*]... [*\-X dir*]... [*general options*] [*dir*]...  
 
 # DESCRIPTION
 
@@ -21,6 +24,9 @@ The programs accept multiple filenames and wildcards as their arguments.
 You can also use them in a pipe. If the program finds its input redirected,
 it will take its input from stdin and send its output to stdout.
 
+In addition, the programs can recursively convert files in one or
+more directories and their descendants.
+
 Note that **fromdos** and **todos** are actually the same program. The name under
 which the program is run determines the default direction it converts (unless
 overridden by an option). If you prefer, you can also rename it
@@ -28,6 +34,8 @@ to **unix2dos** (which will make it behave like **todos**) and **dos2unix** (whi
 will make it act as though it is **fromdos**).
 
 # OPTIONS
+
+## General Options
 
 **\-b, \-\-backup**
 
@@ -97,23 +105,53 @@ modifications.
 
 : Display the current version and quit.
 
+## Options for Recursive Mode
+
+**\-r, \-\-recursive**
+
+: Recursively convert files in the listed directories and their descendants. If you do
+not list any, the current directory is assumed. Only files with the extensions
+specified by the "\-\-include-extension" (or "\-i" for short) option are converted.
+Symbolic links pointing to directories are followed.
+
+**\-i \<ext\>, \-\-include-extension=\<ext\>**
+
+: Convert files with the \<ext\> file extension. Do not include the dot (".") preceding
+the extension, or use wildcards. Multiple "\-i" or "\-\-include-extension" are allowed.
+For example, to convert all \*.c, \*.cpp and \*.h files, use "\-i c \-i cpp \-i h" (without the quotation
+marks). At least one "\-\-include-extension" (or "\-i") must be specified.
+
+**\-X \<dir\>, \-\-exclude-dir=\<dir\>**
+
+: Do not recurse into directories named \<dir\>. Use only one directory name per option.
+Multiple "\-X" or "\-\-exclude-dir" are allowed. \<dir\> should just be the name of the
+directory (the part following the last '/' on Unix-like machines or '\\' on Windows and DOS), without
+any preceding path or even directory separators. Do not use wildcards.
+
+**\-x \<file\>, \-\-exclude-file=\<file\>**
+
+: Do not convert any file named \<file\>. Use only one filename per option.
+Multiple "\-x" or "\-\-exclude-file" are allowed. \<file\> should be just the name of the
+file (the part following the last '/' on Unix-like systems or '\\' on Windows and DOS),
+without any preceding path or even directory separators. Do not use wildcards.
+
 # EXIT CODE
 
 Tofrodos terminates with an exit code of 0 on success and 1 on error.
 
-If the program is invoked with multiple files on the command line, the default behaviour is to skip to the next
-file in the list if an error is encountered with any file. In such a case, the exit code returned will the
-status of the last file processed (ie, 0 on success, 1 on failure). If this is not desirable, use the
+If the program is invoked to process multiple files, the default behaviour is to skip to the next
+file in the list if an error is encountered with any file. In such a case, the exit code returned will be the
+status of the last file processed (that is, 0 on success and 1 on failure). If this is not desirable, use the
 "\-\-exit\-on\-error" option, which will force the program to abort immediately with the appropriate
 exit code on encountering an error.
 
 # EXAMPLES
 
-To convert a single file to Unix format (with line feeds):
+To convert a single file to the Unix format (with line feeds):
 
 	fromdos filetoconvert.txt
 
-To convert multiple files, including wildcard characters, to DOS format (with carriage return/line feed pairs):
+To convert multiple files, including wildcard characters, to the DOS format (with carriage return/line feed pairs):
 
 	todos readme.txt manual.html *.c *.h
 
@@ -124,6 +162,20 @@ If you want the original file backed up with a ".bak" extension:
 To use the program in a pipe:
 
 	cat dosversion.txt | fromdos | diff - unixversion.txt
+
+To recursively convert all \*.c and \*.h files in the "src" and "import" directories
+to the Unix format, but skip any subdirectory named "docs":
+
+	fromdos --recursive --include-ext=c --include-ext=h --exclude-dir=docs src import
+
+To recursively convert all \*.txt and \*.md files in the current directory and its descendants
+to the DOS format, but skip subdirectories called "private" and "secret" as well as any
+file named "dontconvert.txt" (even though it has a ".txt" extension):
+
+	todos -r -i txt -i md -X private -X secret -x dontconvert.txt
+
+Since no directory was listed on the above command line, the program assumed you were
+converting ".", that is, the current directory.
 
 # AUTHOR
 

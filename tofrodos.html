@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.12.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Tofrodos - Convert text files between DOS and Unix file formats</title>
   <style>
@@ -13,7 +13,10 @@
       font-family: Arial;
       font-size: 16pt;
       color: #1a1a1a;
+      color: light-dark(#1a1a1a, #fdfdfd);
       background-color: #fdfdfd;
+      background-color: light-dark(#fdfdfd, #1a1a1a);
+      color-scheme: light dark;
     }
     body {
       margin: 0 auto;
@@ -38,12 +41,16 @@
     }
     @media print {
       html {
-        background-color: white;
+        color-scheme: light only;
       }
-      body {
+      html, body, pre, code {
         background-color: transparent;
+      }
+      body, a, a:visited, blockquote {
         color: black;
-        font-size: 12pt;
+      }
+      pre, code {
+        padding: 0;
       }
       p, h2, h3 {
         orphans: 3;
@@ -56,11 +63,8 @@
     p {
       margin: 1em 0;
     }
-    a {
-      color: #1a1a1a;
-    }
-    a:visited {
-      color: #1a1a1a;
+    a, a:visited {
+      color: inherit;
     }
     img {
       max-width: 100%;
@@ -89,10 +93,14 @@
     blockquote {
       margin: 1em 0 1em 1.7em;
       padding-left: 1em;
-      border-left: 2px solid #e6e6e6;
+      border-left: 2px solid;
+      border-color: #e6e6e6;
+      border-color: light-dark(#e6e6e6, #4c4c4c);
       color: #606060;
+      color: light-dark(#606060, #b6b6b6);
     }
     code {
+      white-space: pre-wrap;
       font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
       font-size: 85%;
       margin: 0;
@@ -113,7 +121,7 @@
     }
     hr {
       border: none;
-      border-top: 1px solid #1a1a1a;
+      border-top: 1px solid currentColor;
       height: 1px;
       margin: 1em 0;
     }
@@ -130,11 +138,11 @@
     }
     tbody {
       margin-top: 0.5em;
-      border-top: 1px solid #1a1a1a;
-      border-bottom: 1px solid #1a1a1a;
+      border-top: 1px solid currentColor;
+      border-bottom: 1px solid currentColor;
     }
     th {
-      border-top: 1px solid #1a1a1a;
+      border-top: 1px solid currentColor;
       padding: 0.25em 0.5em 0.25em 0.5em;
     }
     td {
@@ -156,10 +164,13 @@
     #TOC a:not(:hover) {
       text-decoration: none;
     }
-    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     /* The extra [class] is a hack that increases specificity enough to
        override a similar rule in reveal.js */
@@ -170,7 +181,6 @@
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
     }
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
 </head>
 <body>
@@ -181,8 +191,15 @@ file formats</h1>
 <h1 id="name">NAME</h1>
 <p>Tofrodos - convert text files between DOS and Unix formats.</p>
 <h1 id="synopsis">SYNOPSIS</h1>
-<p><strong>fromdos</strong> [<em>options</em>] [<em>file…</em>]<br />
-<strong>todos</strong> [<em>options</em>] [<em>file…</em>]</p>
+<p><strong>fromdos</strong> [<em>general options</em>]
+[<em>file</em>]…<br />
+<strong>todos</strong> [<em>general options</em>] [<em>file</em>]…</p>
+<p><strong>fromdos</strong> <em>-r</em> <em>-i ext</em> [<em>-i
+ext</em>]… [<em>-x file</em>]… [<em>-X dir</em>]… [<em>general
+options</em>] [<em>dir</em>]…<br />
+<strong>todos</strong> <em>-r</em> <em>-i ext</em> [<em>-i ext</em>]…
+[<em>-x file</em>]… [<em>-X dir</em>]… [<em>general options</em>]
+[<em>dir</em>]…</p>
 <h1 id="description">DESCRIPTION</h1>
 <p>DOS (and Windows) plain ASCII or Unicode UTF-8 text files
 traditionally have a carriage return and line feed pair to mark the end
@@ -195,6 +212,8 @@ direction.</p>
 arguments. You can also use them in a pipe. If the program finds its
 input redirected, it will take its input from stdin and send its output
 to stdout.</p>
+<p>In addition, the programs can recursively convert files in one or
+more directories and their descendants.</p>
 <p>Note that <strong>fromdos</strong> and <strong>todos</strong> are
 actually the same program. The name under which the program is run
 determines the default direction it converts (unless overridden by an
@@ -203,6 +222,7 @@ option). If you prefer, you can also rename it to
 <strong>todos</strong>) and <strong>dos2unix</strong> (which will make
 it act as though it is <strong>fromdos</strong>).</p>
 <h1 id="options">OPTIONS</h1>
+<h2 id="general-options">General Options</h2>
 <dl>
 <dt><strong>-b, --backup</strong></dt>
 <dd>
@@ -286,26 +306,75 @@ information.</p>
 <p>Display the current version and quit.</p>
 </dd>
 </dl>
+<h2 id="options-for-recursive-mode">Options for Recursive Mode</h2>
+<dl>
+<dt><strong>-r, --recursive</strong></dt>
+<dd>
+<p>Recursively convert files in the listed directories and their
+descendants. If you do not list any, the current directory is assumed.
+Only files with the extensions specified by the “--include-extension”
+(or “-i” for short) option are converted. Symbolic links pointing to
+directories are followed.</p>
+</dd>
+<dt><strong>-i &lt;ext&gt;,
+--include-extension=&lt;ext&gt;</strong></dt>
+<dd>
+<p>Convert files with the &lt;ext&gt; file extension. Do not include the
+dot (“.”) preceding the extension, or use wildcards. Multiple “-i” or
+“--include-extension” are allowed. For example, to convert all *.c,
+*.cpp and *.h files, use “-i c -i cpp -i h” (without the quotation
+marks). At least one “--include-extension” (or “-i”) must be
+specified.</p>
+</dd>
+<dt><strong>-X &lt;dir&gt;, --exclude-dir=&lt;dir&gt;</strong></dt>
+<dd>
+<p>Do not recurse into directories named &lt;dir&gt;. Use only one
+directory name per option. Multiple “-X” or “--exclude-dir” are allowed.
+&lt;dir&gt; should just be the name of the directory (the part following
+the last ‘/’ on Unix-like machines or ‘\’ on Windows and DOS), without
+any preceding path or even directory separators. Do not use
+wildcards.</p>
+</dd>
+<dt><strong>-x &lt;file&gt;, --exclude-file=&lt;file&gt;</strong></dt>
+<dd>
+<p>Do not convert any file named &lt;file&gt;. Use only one filename per
+option. Multiple “-x” or “--exclude-file” are allowed. &lt;file&gt;
+should be just the name of the file (the part following the last ‘/’ on
+Unix-like systems or ‘\’ on Windows and DOS), without any preceding path
+or even directory separators. Do not use wildcards.</p>
+</dd>
+</dl>
 <h1 id="exit-code">EXIT CODE</h1>
 <p>Tofrodos terminates with an exit code of 0 on success and 1 on
 error.</p>
-<p>If the program is invoked with multiple files on the command line,
-the default behaviour is to skip to the next file in the list if an
-error is encountered with any file. In such a case, the exit code
-returned will the status of the last file processed (ie, 0 on success, 1
-on failure). If this is not desirable, use the “--exit-on-error” option,
+<p>If the program is invoked to process multiple files, the default
+behaviour is to skip to the next file in the list if an error is
+encountered with any file. In such a case, the exit code returned will
+be the status of the last file processed (that is, 0 on success and 1 on
+failure). If this is not desirable, use the “--exit-on-error” option,
 which will force the program to abort immediately with the appropriate
 exit code on encountering an error.</p>
 <h1 id="examples">EXAMPLES</h1>
-<p>To convert a single file to Unix format (with line feeds):</p>
+<p>To convert a single file to the Unix format (with line feeds):</p>
 <pre><code>fromdos filetoconvert.txt</code></pre>
-<p>To convert multiple files, including wildcard characters, to DOS
+<p>To convert multiple files, including wildcard characters, to the DOS
 format (with carriage return/line feed pairs):</p>
 <pre><code>todos readme.txt manual.html *.c *.h</code></pre>
 <p>If you want the original file backed up with a “.bak” extension:</p>
 <pre><code>todos --backup filetoconvert.txt</code></pre>
 <p>To use the program in a pipe:</p>
 <pre><code>cat dosversion.txt | fromdos | diff - unixversion.txt</code></pre>
+<p>To recursively convert all *.c and *.h files in the “src” and
+“import” directories to the Unix format, but skip any subdirectory named
+“docs”:</p>
+<pre><code>fromdos --recursive --include-ext=c --include-ext=h --exclude-dir=docs src import</code></pre>
+<p>To recursively convert all *.txt and *.md files in the current
+directory and its descendants to the DOS format, but skip subdirectories
+called “private” and “secret” as well as any file named
+“dontconvert.txt” (even though it has a “.txt” extension):</p>
+<pre><code>todos -r -i txt -i md -X private -X secret -x dontconvert.txt</code></pre>
+<p>Since no directory was listed on the above command line, the program
+assumed you were converting “.”, that is, the current directory.</p>
 <h1 id="author">AUTHOR</h1>
 <p>The program and its accompanying files and documentation are:<br />
 Copyright 1996-2026 by Christopher Heng. All rights reserved.</p>

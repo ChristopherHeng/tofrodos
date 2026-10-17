@@ -73,10 +73,10 @@ int check_and_save_file_info ( char * filename, mode_t * origfilemodep,
 #if 0	// This, sadly, does not work in Visual Studio 2026 / UCRT: it always reports 1.
 		if (statbuf.st_nlink > 1) {
 			// file has more than one hard link
-			*has_multiple_hard_linksp = 1 ;
+			*use_copy_and_convert_methodp = 1 ;
 		}
 		else {
-			*has_multiple_hard_linksp = 0 ;
+			*use_copy_and_convert_methodp = 0 ;
 		}
 #endif
 

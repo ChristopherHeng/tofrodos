@@ -4,6 +4,10 @@
 # This makefile requires the GNU make to work (the GNU extensions are used).
 # Note: this is the Linux makefile. Do not use this for MinGW-w64.
 
+# If you want to build/rebuild the man page from source, you will also need
+# to install pandoc. If it doesn't exist in your package repo, get it from
+# https://github.com/jgm/pandoc
+
 # Define the following if you need
 #
 #	DEBUG	to add debugging information, eg "make DEBUG=1 all"
@@ -53,17 +57,19 @@ MANDIR = /usr/man/man1
 # filenames
 FROMDOS = fromdos
 FROMDOSMAN = fromdos.1
-FROMDOSTXT = fromdos.txt
 TODOS = todos
 
 # lists of filenames
-OBJS =	check_and_save_file_info.o \
+OBJS =	add_to_sorted_array.o \
+	check_and_save_file_info.o \
 	convert_file.o \
 	copy_file.o \
 	emsg.o \
 	init.o \
+	item_is_in_array.o \
 	make_filenames.o \
 	process_file.o \
+	recursively_process.o \
 	resolve_filename_and_convert.o \
 	strip_path_prefix.o \
 	tofrodos.o \
@@ -95,17 +101,15 @@ installman: $(FROMDOSMAN)
 $(FROMDOS): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(FROMDOS) $(OBJS)
 
-$(FROMDOSTXT): $(FROMDOSMAN)
-	gtbl $(FROMDOSMAN) | groff -Tascii -mandoc | \
-		troff -Tascii -mandoc | grotty > $@
-
 $(TODOS): $(FROMDOS)
 	$(LN) $(LNFLAGS) $(FROMDOS) $(TODOS)
 
-fromdos.1: man/manual-source.md man/man-metadata.txt
+$(FROMDOSMAN): man/manual-source.md man/man-metadata.txt
 	pandoc -s -t man -o $@ --metadata-file=man/man-metadata.txt $<
 
 # objects
+add_to_sorted_array.o: add_to_sorted_array.c config.h emsg.h safely_add_size_t_operands.h tofrodos.h
+
 check_and_save_file_info.o: posix/check_and_save_file_info.c config.h emsg.h tofrodos.h
 	$(CC) $(CFLAGS) $<
 
@@ -115,11 +119,16 @@ copy_file.o: copy_file.h
 
 init.o: init.c config.h emsg.h tofrodos.h utility.h version.h
 
+item_is_in_array.o: item_is_in_array.c config.h tofrodos.h
+
 make_filenames.o: make_filenames.c config.h emsg.h tofrodos.h utility.h
 
 process_file.o: process_file.c config.h emsg.h tofrodos.h utility.h
 
-resolve_filename_and_convert.o: posix/resolve_filename_and_convert.c config.h emsg.h tofrodos.h utility.h
+recursively_process.o: posix/recursively_process.c config.h emsg.h tofrodos.h
+	$(CC) $(CFLAGS) $<
+
+resolve_filename_and_convert.o: posix/resolve_filename_and_convert.c config.h emsg.h safely_add_size_t_operands.h tofrodos.h utility.h
 	$(CC) $(CFLAGS) $<
 
 strip_path_prefix.o: strip_path_prefix.c config.h utility.h

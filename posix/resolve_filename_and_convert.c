@@ -7,11 +7,14 @@
 
 #include "config.h"
 
-#include <stdlib.h>	// free()
-#include <unistd.h>	// readlink(),
+#include <assert.h>	// static_assert()
+#include <limits.h>	// REAL_PATH
+#include <stdint.h> // SIZE_MAX
+#include <stdlib.h>	// free(), realpath()
 #include <sys/stat.h> // lstat()
 
 #include "emsg.h"
+#include "safely_add_size_t_operands.h"
 #include "tofrodos.h"
 #include "utility.h" // xmalloc()
 
@@ -31,54 +34,43 @@ int resolve_filename_and_convert ( char * filename )
 {
 	struct stat	statbuf ;
 	char *		realfilepath ;
-	int			len ;
-	int			err ;
+	int			ret_val ;
 
-	/* get the file information */
-	if (lstat( filename, &statbuf )) {
-		/* couldn't stat the file. */
-		emsg( EMSG_ACCESSFILE, filename );
-		return -1 ;
-	}
+	do {
+		ret_val = -1 ;
+		realfilepath = NULL ;
 
-	if (S_ISLNK(statbuf.st_mode)) {
-		/*
-			Get the real filename for symbolic links.
-			Note: the S_ISLNK() macro is supposed to exist in sys/stat.h
-			Early Unices may not have this macro. If it does not exist, you
-			may have to define it yourself, a la S_ISDIR() and family.
-			eg, #define S_ISLNK(x) (((x) & S_IFMT) == S_IFLNK)
-			or something like that.
-		*/
-
-		/* for symbolic links, st_size contains the length of the pathname sans terminating null byte */
-		if (statbuf.st_size == 0) {
-			/* There's a report somewhere of a discovery that macOS returns st_size == 0 for "/dev/stdin" when it
-			is a symlink to "fd/0". I'm not sure if it is a valid report, but let's play it safe. */
-			emsg ( EMSG_SYMLINK, filename );
-			return -1 ;
+		/* get the file information */
+		if (lstat( filename, &statbuf )) {
+			/* couldn't stat the file. */
+			emsg( EMSG_ACCESSFILE, filename );
+			break ;
 		}
-		realfilepath = xmalloc( statbuf.st_size + 1 );
 
-		if ((len = readlink( filename, realfilepath, statbuf.st_size )) != -1) {
-
-			/* got to null terminate the string - there is always space because */
-			/* we passed readlink() the size of the buffer less 1. */
-			realfilepath[len] = '\0' ;
+		if (S_ISLNK(statbuf.st_mode)) {
+			if ((realfilepath = malloc( PATH_MAX )) == NULL) {
+				emsg( EMSG_NOMEM );
+				break ;
+			}
+			if (realpath( filename, realfilepath ) == NULL) {
+				emsg ( EMSG_SYMLINK, filename );
+				break ;
+			}
 			if (verbose) {
 				emsg( VERBOSE_SYMLINKSRC, filename, realfilepath );
 			}
-			err = process_file( realfilepath );
+			ret_val = process_file( realfilepath );
 		}
 		else {
-			emsg( EMSG_SYMLINK, filename );
-			err = -1 ;
+		/* If we reach here, "filename" is not a symbolic link */
+			ret_val = process_file( filename );
 		}
-		free ( realfilepath );
-		return err ;
+	} while (0);
+
+	if (realfilepath != NULL) {
+		free( realfilepath );
 	}
-	/* If we reach here, "filename" is not a symbolic link */
-	return process_file( filename );
+	return ret_val ;
 }
 
 #endif // defined(UNIX)

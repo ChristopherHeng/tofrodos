@@ -11,16 +11,15 @@
 # if the VERSION macro is correctly set to the same value as it was when the "dist" target was built.
 
 # To make the binary distribution zip and accompanying SHA512 checksum file
-#	nmake -f makefile.vs VERSION=1.9.0 dist
+#	nmake -f makefile.vs VERSION=3.0.0 dist
 # Note that to make the dist target, you will also need:
 #	pandoc - from https://github.com/jgm/pandoc
 #	hash - from https://github.com/ChristopherHeng/hash
 #	tar - the bsdtar version that is part of Windows (not GNU tar!)
 
-
 # The following is used for generating the binary distribution zip; override on the nmake command line.
 !ifndef VERSION
-VERSION = 2.1.1
+VERSION = 3.0.0
 !endif
 
 # Programs
@@ -69,17 +68,22 @@ TODOS = todos.exe
 TOFRODOS_BINARY_DIST = tofrodos-$(VERSION)-windows-x86-64.zip
 TOFRODOS_BINARY_DIST_CHECKSUM = $(TOFRODOS_BINARY_DIST).sha512
 
-OBJS =	check_and_save_file_info.obj \
+OBJS =	add_to_sorted_array.obj \
+	append_to_path_prefix.obj \
+	check_and_save_file_info.obj \
 	convert_file.obj \
 	copy_file.obj \
 	emsg.obj \
 	init.obj \
+	item_is_in_array.obj \
 	getopt.obj \
 	make_filenames.obj \
 	mkstemp.obj \
 	process_file.obj \
+	recursively_process.obj \
 	resolve_filename_and_convert.obj \
 	strip_path_prefix.obj \
+	strip_trailing_dir_separators.obj \
 	tofrodos.obj \
 	utility.obj
 
@@ -102,7 +106,7 @@ test: $(FROMDOS) $(TODOS) print_file_times.exe
 	cd tests
 	runtests all
 
-dist: fromdos.1 tofrodos.html $(TOFRODOS_BINARY_DIST) $(TOFRODOS_BINARY_DIST_CHECKSUM)
+dist: $(TOFRODOS_BINARY_DIST) $(TOFRODOS_BINARY_DIST_CHECKSUM) fromdos.1
 
 $(FROMDOS): $(OBJS)
 	$(LD) @<<
@@ -129,6 +133,10 @@ mkstemp.obj: $(LIBDIR)\mkstemp.c
 	$(CC) $(CFLAGS) %s
 
 # main objs
+add_to_sorted_array.obj: add_to_sorted_array.c config.h emsg.h safely_add_size_t_operands.h tofrodos.h
+
+append_to_path_prefix.obj: append_to_path_prefix.c config.h safely_add_size_t_operands.h tofrodos.h
+
 check_and_save_file_info.obj: $(SYSDIR)\check_and_save_file_info.c config.h emsg.h tofrodos.h
 	$(CC) $(CFLAGS) %s
 
@@ -138,19 +146,34 @@ copy_file.obj: copy_file.c copy_file.h
 
 emsg.obj: emsg.c config.h emsg.h tofrodos.h
 
+# Note that the fromdos.1 target below actually depends on fromdos being available somewhere in the PATH
+# or the current directory. I didn't list it as one of the dependencies because I sometimes want to
+# generate fromdos.1 without building everything else (such as during development). It works on my
+# machine because I already have todos/fromdos in my path (albeit not necessarily the latest version
+# I'm working on). That said, if this target is built as a result of typing "nmake -f makefile.vs dist",
+# fromdos will have already been built at this point, so unless you make this target manually, you won't
+# encounter this issue regardless of whether you have fromdos on your PATH or not.
 fromdos.1: man\manual-source.md man\man-metadata.txt
 	pandoc -s -t man -o $@ --metadata-file=man\man-metadata.txt %s
+	fromdos $@
 
 init.obj: init.c config.h emsg.h tofrodos.h utility.h version.h $(LIBDIR)\getopt.h
 
-make_filenames.obj: make_filenames.c config.h emsg.h tofrodos.h utility.h
+item_is_in_array.obj: item_is_in_array.c config.h tofrodos.h
+
+make_filenames.obj: make_filenames.c config.h emsg.h safely_add_size_t_operands.h tofrodos.h utility.h
 
 process_file.obj: process_file.c config.h emsg.h tofrodos.h utility.h
+
+recursively_process.obj: $(SYSDIR)\recursively_process.c config.h emsg.h tofrodos.h
+	$(CC) $(CFLAGS) %s
 
 resolve_filename_and_convert.obj: $(SYSDIR)\resolve_filename_and_convert.c config.h emsg.h tofrodos.h utility.h
 	$(CC) $(CFLAGS) %s
 
 strip_path_prefix.obj: strip_path_prefix.c config.h utility.h
+
+strip_trailing_dir_separators.obj: strip_trailing_dir_separators.c config.h tofrodos.h
 
 tofrodos.html: man\manual-source.md man\html-metadata.txt
 	pandoc -s -t html -o $@ --metadata-file=man\html-metadata.txt -V mainfont=Arial -V fontsize=16pt -V maxwidth=45em %s

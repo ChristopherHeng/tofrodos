@@ -28,18 +28,35 @@
 #include "version.h"
 
 /* macros */
-#define	HELPFMT		"\nUsage: %s [options] [file...]\n"\
+#define	HELPFMT		"Usage:\n"\
+					"To convert all listed files (default: stdin):\n"\
+					"\ttodos [general options] [file...]\n"\
+					"\tfromdos [general options] [file...]\n"\
+					"To recursively convert all files with the given extensions in the listed dirs (default: current dir):\n"\
+					"\ttodos -r -i ext [-i ext]... [-x name]... [-X name]... [general options] [directory...]\n"\
+					"\tfromdos -r -i ext [-i ext]... [-x name]... [-X name]... [general options] [directory...]\n"\
+					"\teg, fromdos -r -i cpp -i h --exclude-dir=tests src\n"\
+					"General options:\n"\
 					"-b, --backup\t\t\tBack up original file (.bak).\n"\
 					"-d, --dos2unix, --fromdos\tConvert from DOS to Unix.\n"\
 					"-e, --exit-on-error\t\tSkip remaining files on error.\n"\
 					"-f, --force\t\t\tConvert even if file is read-only.\n"\
 					"-h, --help\t\t\tDisplay help on usage and quit.\n"\
-					"-l logfile, --log=logfile\tLog most errors and verbose messages to <logfile>\n"\
+					"-l logfile, --log=logfile\tLog most errors and verbose messages to <logfile>.\n"\
 					"-o, --overwrite\t\t\tOverwrite original file (default).\n"\
 					"-p, --preserve\t\t\tPreserve file owner and time.\n"\
 					"-u, --unix2dos, --todos\t\tConvert from Unix to DOS.\n"\
 					"-v, --verbose\t\t\tVerbose.\n"\
-					"-V, --version\t\t\tShow version and quit.\n"
+					"-V, --version\t\t\tShow version and quit.\n"\
+					"Options specific to recursive mode:\n"\
+					"-r, --recursive\t\t\tRecursively convert.\n"\
+					"-i ext, --include-extension=ext\n"\
+					"\tConvert files with the specified extension. Use only one extension per -i.\n"\
+					"\tMultiple -i options are allowed. Do not include the leading '.'. Do not use wildcards.\n"\
+					"-x name, --exclude-file=name\tSkip files with the given name.\n"\
+					"-X name, --exclude-dir=name\tSkip directories with the given name.\n"\
+					"\tFor -x and -X, use only one name per -x/-X. Multiple -x/-X options are allowed.\n"\
+					"\tDo not include the preceding directory separator. Do not use wildcards.\n"
 #define	VERFMT		"%s Ver %d.%d.%d "\
 			"Converts text files between DOS and Unix formats.\n"\
 			"Copyright 1996-2026 Christopher Heng. All rights reserved.\n"\
@@ -132,19 +149,23 @@ int init ( char * firstarg )
         	0 if the options were successfully parsed, and processing should continue
         	-1 on error, and program should terminate
 */
-int parseargs ( int argc, char ** argv )
+parseargs_retval_t parseargs ( int argc, char ** argv )
 {
-	static char optstring[] = "bdefhl:opuvV" ;
+	static char optstring[] = "bdefhi:l:opruvVx:X:" ;
 	static struct option longopts[] = {
 		{ "backup", no_argument, NULL, 'b' },
 		{ "dos2unix", no_argument, NULL, 'd' },
 		{ "fromdos", no_argument, NULL, 'd' },
+		{ "exclude-file", required_argument, NULL, 'x' },
+		{ "exclude-dir", required_argument, NULL, 'X' },
 		{ "exit-on-error", no_argument, NULL, 'e' },
 		{ "force", no_argument, NULL, 'f' },
 		{ "help", no_argument, NULL, 'h' },
+		{ "include-extension", required_argument, NULL, 'i' },
 		{ "log", required_argument, NULL, 'l' },
 		{ "overwrite", no_argument, NULL, 'o' },
 		{ "preserve", no_argument, NULL, 'p' },
+		{ "recursive", no_argument, NULL, 'r' },
 		{ "unix2dos", no_argument, NULL, 'u' },
 		{ "todos", no_argument, NULL, 'u' },
 		{ "verbose", no_argument, NULL, 'v' },
@@ -152,12 +173,12 @@ int parseargs ( int argc, char ** argv )
 		{ NULL, no_argument, NULL, 0 }
 	} ;
 	int c ;
-	int retval ;
+	parseargs_retval_t retval ;
 	char * orig_arg0 ;
 
 	orig_arg0 = argv[0] ;
 	argv[0] = progname ; // so that getopt_long() prints errors with the same name as our other error messages
-	retval = 0 ; // assume success, and that the caller should continue
+	retval = PARSEARGS_SUCCESS ; // assume success, and that the caller should continue
 	while ((c = getopt_long( argc, argv, optstring, longopts, NULL )) != -1) {
 		switch( c ) {
 			case 'b': /* make backup of original file */
@@ -176,7 +197,12 @@ int parseargs ( int argc, char ** argv )
 				break ;
 			case 'h': /* display short usage screen and quit */
                	showhelp() ;
-            	retval = 1 ; // program should terminate with EXIT_SUCCESS
+            	retval = PARSEARGS_EXIT_WITH_SUCCESS ; // program should terminate with EXIT_SUCCESS
+				break ;
+			case 'i':
+				if (add_to_sorted_array( &extensions, optarg )) {
+					retval = PARSEARGS_EXIT_WITH_FAILURE ;
+				}
 				break ;
             case 'l': /* log errors to filename */
             	errorlogfilename = optarg ;
@@ -187,6 +213,9 @@ int parseargs ( int argc, char ** argv )
 			case 'p': /* preserve file owner and date */
 				preserve = 1 ;
 				break ;
+			case 'r':
+				recursive_mode = 1 ;
+				break ;
 			case 'u': /* Unix to DOS */
 				direction = DIRECTION_UNIX2DOS ;
 				break ;
@@ -195,10 +224,20 @@ int parseargs ( int argc, char ** argv )
 				break ;
 			case 'V': /* show version and quit */
 				showversion() ;
-				retval = 1 ; // program should terminate with EXIT_SUCCESS
+				retval = PARSEARGS_EXIT_WITH_SUCCESS ; // program should terminate with EXIT_SUCCESS
+				break ;
+			case 'x':
+				if (add_to_sorted_array( &file_excludes, optarg )) {
+					retval = PARSEARGS_EXIT_WITH_FAILURE ;
+				}
+				break ;
+			case 'X':
+				if (add_to_sorted_array( &dir_excludes, optarg )) {
+					retval = PARSEARGS_EXIT_WITH_FAILURE ;
+				}
 				break ;
 			default:
-				retval = -1 ; // error message has already been printed
+				retval = PARSEARGS_EXIT_WITH_FAILURE ; // error message has already been printed
 				break ;
 		}
 	}
@@ -225,6 +264,6 @@ static void showversion ( void )
 static void showhelp ( void )
 {
 	showversion();
-	fprintf( stderr, HELPFMT, progname );
+	fprintf( stderr, HELPFMT );
 	return ;
 }

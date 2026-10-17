@@ -37,7 +37,7 @@
 	(Windows and MSDOS) for which this was primarily written.
 
 	29 March 2026
-	- added warning in the comments not to use this implmentation on POSIX systems
+	- added warning in the comments not to use this implementation on POSIX systems
 
 	2 March 2026
 	- bug fix: no longer opens file with O_BINARY

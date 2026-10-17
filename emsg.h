@@ -61,6 +61,14 @@ extern "C" {
 #define	EMSG_DIRNOTWRITEABLE	"Unable to back up %s because the directory it is in is not writeable.\n"\
 								"Aborted. Your file was not changed.\n"
 #define	EMSG_TMPDIR			"Unable to create file in the temporary directory to convert %s.\n"
+#define	EMSG_TOO_MANY_EXT_OR_EXCLUDES	"Too many extensions or excludes specified.\n"
+#define	EMSG_EXTREQUIRED	"You need to specify at least one extension to convert for recursive mode.\n"
+#define	EMSG_DIR_TOO_DEEP	"Directory is too deep or its name is too long: %s\n"
+#define	EMSG_FTS_OPEN		"Unable to open handle to directory.\n"
+#define	EMSG_FTS_ERROR		"%s: %s\n"
+#define	EMSG_BROKEN_SYMLINK	"Symlink points to a non-existent file or directory: %s.\n"
+#define	EMSG_SYMLINK_UNKNOWN	"Symlink does not point to directory or regular file: %s.\n"
+#define	EMSG_NOT_RECURSIVE_MODE "Options -i, -x, -X and their long versions are only valid in recursive mode (-r).\n"
 
 /* internal error macros */
 #define	EINTNL_DIRECTION	"unknown conversion direction"
@@ -70,6 +78,11 @@ extern "C" {
 #define	VERBOSE_SYMLINKSRC	"\"%s\" resolves to \"%s\"\n"
 #define	VERBOSE_ALTMETHOD	"\"%s\" either has multiple hard links or is in a directory you don't\n"\
 							"have write access. Using alternative method to convert.\n"
+#define	VERBOSE_RECURSE_CURDIR	"Recursing through current directory.\n"
+#define	VERBOSE_RECURSE_DIR		"Recursing through %s\n"
+#define	VERBOSE_RECURSE_SKIP_DIR	"Skipping excluded directory: %s\n"
+#define	VERBOSE_RECURSE_SKIP_FILE	"Skipping excluded file: %s\n"
+#define	VERBOSE_RECURSE_SKIP_UNREADABLE_DIR "Skipping unreadable directory: %s\n"
 
 /* function declarations */
 extern void emsg ( char * message, ... );

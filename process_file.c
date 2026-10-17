@@ -377,8 +377,7 @@ static inline void clean_up_for_copy_and_convert( int has_error_in_conversion, c
 		}
 		// if --preserve was specified, we need to restore the file time
 		if (preserve) {
-			// --preserve; we need to restore the file time
-			// since we ovewrote the original file, we don't have to restore the owner and group
+			// since we overwrote the original file, we don't have to restore the owner and group
 			if (utime( filename, filetimebufp )) {
 				emsg( EMSG_UTIME, filename );
 			}
@@ -425,7 +424,7 @@ static inline void clean_up_for_convert_and_rename( int has_error_in_conversion,
 			remove( filename );	// delete the original file
 			// we don't check for error returns for this, since any error message about its failure will just
 			// confuse the user. "What? Why is it deleting my file?" If this fails, the next rename() will fail too
-			// since rename() on Windows will not delete the target automatically, and the error message will from the
+			// since rename() on Windows will not delete the target automatically, and the error message from the
 			// failed rename() will tell the user what happened.
 #endif
 			// this else clause is empty on POSIX systems

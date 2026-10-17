@@ -5,7 +5,6 @@
 
 #include "config.h"
 
-#include <stdint.h> // SIZE_MAX
 #include <stdlib.h>	// exit()
 #include <string.h> // strlen(), strncpy(), strcat(), size_t
 
@@ -17,6 +16,10 @@
 #include "tofrodos.h"
 #include "utility.h"
 
+#if defined(WIN32) || defined(UNIX)
+#include "safely_add_size_t_operands.h"
+#endif
+
 #define	MKSTEMP_TEMPLATE	"XXXXXX"
 #define	BACKUP_SUFFIX		".bak"
 
@@ -27,8 +30,6 @@
 #define	TEMPLATE_FOR_TMPDIR	"/tmp/XXXXXX"
 
 #if defined(WIN32) || defined(UNIX)
-static inline int safely_add_size_t_operands( size_t * result, size_t first, size_t second );
-
 // note that we assume that filename != NULL, mkstemp_templatep != NULL but backup_filenamep may be NULL
 int make_filenames( char * filename, char ** mkstemp_templatep, char ** backup_filenamep,
 	int * use_copy_and_convert_methodp )
@@ -137,16 +138,6 @@ int make_filenames( char * filename, char ** mkstemp_templatep, char ** backup_f
 	} while (0) ;
 
 	return retval ;
-}
-
-static inline int safely_add_size_t_operands( size_t * result, size_t first, size_t second )
-{
-	if ((SIZE_MAX - first) >= second) {
-		*result = first + second ;
-		return 0 ;
-	}
-	else
-		return -1 ;
 }
 
 #elif defined(MSDOS)

@@ -5,10 +5,10 @@
 - [What is Tofrodos?](#intro)
 - [How to Use Tofrodos](#howtouse)
 - [How to Install Tofrodos](#install)
-	- [Linux, macOS and Unix-type Systems](#instunix)
+	- [Linux, macOS and Unix-like Systems](#instunix)
 	- [Windows](#instwin)
 	- [MSDOS, FreeDOS and Clones](#instdos)
-- [Compiling Tofrodos for Linux, macOS and Unix-type Systems](#bldunix)
+- [Compiling Tofrodos for Linux, macOS and Unix-like Systems](#bldunix)
 - [Compiling Tofrodos for Windows](#bldwin)
 - [Compiling Tofrodos for MSDOS](#blddos)
 - [Porting to Other Systems](#porting)
@@ -30,12 +30,12 @@ text files to the DOS format.
 
 Tofrodos is a command line program. This means that if you
 use Windows, you will need to open Command Prompt.
-If you use any of the Unix-type systems like Linux, macOS,
-etc, you will need to start a shell (for example, bash).
+If you use any of the Unix-like systems, such as Linux, macOS,
+FreeBSD, etc, you will need to start a shell (for example, bash).
 
 To convert a plain text file with CR-LF line endings (which
 is used by Windows and DOS) to LF endings (used by
-Unix-type systems), do:
+Unix-like systems), do:
 
 	fromdos file-to-convert.txt
 
@@ -58,10 +58,29 @@ program), like so:
 
 	cat some-file.txt | todos | diff - reference.txt
 
+If you have files scattered across multiple subdirectories,
+you can make Tofrodos recursively descend through those
+directories to convert them. Take for example the following
+command line:
+
+	fromdos -r -i cpp -i h -i txt --exclude-dir=testscripts src
+
+The `-r`, short for `--recursive`, instructs Tofrodos to check
+the `src` directory and all its descendants except any
+subdirectory called `testscripts`, and convert all files ending
+with the `.cpp`, `.h` and `.txt` extensions. Extensions
+must be specified one at a time
+(no wildcards allowed) with `-i` (or `--include-extension` if
+you prefer the long form). You can exclude specific directories
+with `-X` (with a capital "X") or its long version `--exclude-dir`,
+and specific files with `-x` (with a small "x") or its long
+form `--exclude-file`. Multiple `-x` and `-X` options may be used,
+and wildcards are not allowed in them.
+
 The names *todos* and *fromdos* (or "todos.exe" and "fromdos.exe"
-in Windows) are traditionally the names under which this program is
+on Windows) are traditionally the names under which this program is
 installed. But you can also rename the program files to *unix2dos*
-and *dos2unix* (or "unix2dos.exe" and "dos2unix.exe" in Windows),
+and *dos2unix* (or "unix2dos.exe" and "dos2unix.exe" on Windows),
 and they will work just fine. Under the hood, these are all the
 same program file. Tofrodos checks the name under which it is run
 (whether "todos", "fromdos", "unix2dos" or "dos2unix") and converts
@@ -71,19 +90,24 @@ That's it. For more advanced options, please see the
 tofrodos manual. If you use Windows, open `tofrodos.html`
 in your web browser. If you use Linux and have installed
 Tofrodos in the usual way, type `man fromdos` or
-`man todos`.
+`man todos`. You can also see a short summary of all options
+by typing `todos --help` or `fromdos --help` on the command line.
 
 ## <a id="install"></a>How to Install Tofrodos
 
-### <a id="instunix"></a>Linux, macOS and Unix-type Systems
+### <a id="instunix"></a>Linux, macOS and Unix-like Systems
 
 If you use Linux, you may be able to get tofrodos from your distribution's
 repository. For example, on Ubuntu, install it with
 
 	sudo apt install tofrodos
 
-Alternatively, you can also compile it youself. See the section
-[Compiling Tofrodos for Linux, macOS and Unix-type Systems](#bldunix).
+Not all package repositories have the latest version of Tofrodos.
+For example, at the time I write this, Debian and all downstream distributions
+that depend on it include a very outdated version. If you want the
+latest version, one solution is to compile it yourself. See the section
+[Compiling Tofrodos for Linux, macOS and Unix-like Systems](#bldunix)
+for more information.
 
 ### <a id="instwin"></a>Windows
 
@@ -100,8 +124,8 @@ Note that if you prefer the names "dos2unix.exe" and
 "unix2dos.exe", just make a copy of "todos.exe" (or "fromdos.exe")
 under those names. Tofrodos automatically detects the name under
 which it is run, and will change its behaviour accordingly.
-(That is, "dos2unix" will convert files from the DOS format to
-the Unix format, and "unix2dos" will convert files from the
+(That is, "dos2unix.exe" will convert files from the DOS format to
+the Unix format, and "unix2dos.exe" will convert files from the
 Unix format to the DOS format.)
 
 If you wish to compile the program from the sources yourself,
@@ -114,20 +138,30 @@ for more information.
 You will need to compile the sources. See the section
 [Compiling Tofrodos for MSDOS](#blddos).
 
-## <a id="bldunix"></a>Compiling Tofrodos for Linux, macOS and Unix-type Systems
+## <a id="bldunix"></a>Compiling Tofrodos for Linux, macOS and Unix-like Systems
 
 First, get the source code from the Tofrodos repository at  
 https://www.github.com/ChristopherHeng/tofrodos
-That is, either download the source zip from the
+That is, either download the source archive from the
 [releases page](https://www.github.com/ChristopherHeng/tofrodos/releases)
 or clone the repository.
 
-Then, to compile everything, just type:
+Note that the source zip and tar.gz files that
+GitHub automatically generates contain source files with CR/LF line
+endings (since that's what my files have). As far
+as I can tell, this is not a problem for gcc.
+If it bothers you, clone the repository (instead of
+downloading the source archives) and let Git check out your working
+copy. It should then check out the files that are not managed
+by `.gitattributes` using your system's native EOL (ie, with LF on
+Unix-like systems).
+
+To compile everything, just type:
 
 	make -f makefile.gcc all
 
-You can then install the binaries to /usr/bin and the man pages
-to /usr/man/man1 by typing:
+You can then install the binaries to `/usr/bin` and the man pages
+to `/usr/man/man1` by typing:
 
 	make -f makefile.gcc install
 
@@ -139,23 +173,19 @@ but it's just in case you're new to installing programs.)
 To install them somewhere other than the defaults,
 redefine BINDIR and MANDIR for the binary and manual page
 destinations respectively. For example, to install the binaries
-in /usr/local/bin and the manual page in /usr/local/man/man1,
+in `/usr/local/bin` and the manual page in `/usr/local/man/man1`,
 do the following:
 
 	make -f makefile.gcc BINDIR=/usr/local/bin MANDIR=/usr/local/man/man1 install
-
-Note that macOS does not have a specific directory for
-man pages. As such, simply typing "make install" will fail on
-that system. You will need to set MANDIR to some directory that
-you know exists.
 
 To read the manual page after installation, simply type
 
 	man fromdos
 
-If you've installed MANDIR to a non-standard location, so
-that the above does not work (such as you may have done
-on macOS), just specify the path, for example:
+If you have set MANDIR to a non-standard location, so
+that the above does not work, specify the path to the page
+when invoking "man". For example, if the manual is in the
+current directory, type:
 
 	man ./fromdos.1
 
@@ -164,8 +194,8 @@ Note that if you prefer the names "dos2unix" and
 Tofrodos automatically detects the name under which it is run,
 and will change its behaviour accordingly. That is, "dos2unix"
 will convert files from the DOS format to the Unix format,
-and "unix2dos" will convert files from the Unix format to the
-DOS format. No code changes are necessary.
+and "unix2dos" will convert them in the other direction.
+No code changes are necessary.
 
 ## <a id="bldwin"></a>Compiling Tofrodos for Windows
 
@@ -184,11 +214,11 @@ To compile with Visual Studio, do the following:
 
 	nmake -f makefile.vs all
 
-To compile with MinGW-w64, do this instead:
+To compile with the gcc that comes with MinGW-w64, do this instead:
 
 	make -f makefile.min all
 
-(Depending on which MinGW-w64 distribution you installed, you may have
+(Depending on which MinGW-w64 distribution you have installed, you may need
 to invoke it with "mingw32-make" instead of "make".)
 
 The distribution binaries were compiled with Visual Studio.
@@ -231,43 +261,36 @@ Make sure you do a
 before compiling again for a different target or the response files
 and object files will be wrong for the new target.
 
-Note that the sources are configured for compilation with the
-"stable testing" version of OpenWatcom as found on
-https://openwatcom.org/ftp/source/ow_portable_v2_stable.zip
-The version I used identified itself as "Version 2.0beta1 LA".
-If you are using the earlier version 1.9, you may or may not have
-to tweak `config.h` to define some compatibility macros and typedefs.
-I have added information to that file on what to do if you compile with
-the old version and get errors.
-
 ## <a id="porting"></a>Porting to Other Systems
 
-If you want to compile Tofrodos for a system other than Linux, MSDOS
-or Windows, you may or may not have some work in store for you. The
-program is very small, so the work you need to do is probably
-(hopefully) minimal.
+If you want to compile Tofrodos for a system other than those listed
+above, you may or may not have some work in store for you. The
+program is very small, so the tweaks you need to make are hopefully minimal.
 
-The first place to look into is probably the config.h file, where I
-tried to place as many system and compiler macros as I could think of.
-
-If you are compiling on other Unix systems, tweaking the config.h file
-macros may well be all that you need to do. I have reports of success
-with people using it on macOS, FreeBSD, HP-UX and others.
+The first place to look into is probably the `config.h` file. You will
+probably also have to adapt one of the makefiles for your platform.
 
 ## <a id="history"></a>History of Changes
 
 The dates given are when the code base was finalised and do not
 necessarily refer to the date of public release.
 
+Version 3.0.0 - 17 October 2026
+- [All systems] Tofrodos can now recursively convert files in
+one or more directories.
+- [Unix-like systems] fixed bug where Tofrodos did not
+handle a chain of symlinks (where the target of a symlink is
+yet another symlink) correctly.
+
 Version 2.1.1 20 Apr 2026
-- [Unix-type systems] fixed bug where Tofrodos was unable to
+- [Unix-like systems] fixed bug where Tofrodos was unable to
 convert a file in a directory that is not writeable by the user,
 even though the file itself is writeable.
 
 Version 2.1.0 29 Mar 2026
 - [All systems except MSDOS] fixed bug where Tofrodos would
 incorrectly handle files with multiple hard links.
-- [Unix-type systems] fixed bug where in certain situations,
+- [Unix-like systems] fixed bug where in certain situations,
 earlier versions of Tofrodos could fail to correctly determine a
 file's read/write permissions. It only happens if you try
 to convert a file that you do not own.
@@ -275,10 +298,10 @@ to convert a file that you do not own.
 is not able to restore the file's original owner and/or time, it will
 now issue error messages to that effect. It would previously silently
 fail the change.
-- [Unix-type systems] Tofrodos will no longer allow you to convert
+- [Unix-like systems] Tofrodos will no longer allow you to convert
 a read-only file that you are not the owner of, even if you use
 the --force option. (You can, of course, manually chmod the file to
-remove the read-only flag if you have the necessary pemissions.)
+remove the read-only flag if you have the necessary privileges.)
 - In view of the non-trivial bug fixes here, this is a
 recommended upgrade.
 
@@ -309,7 +332,7 @@ generated from the same source file, making it easier to update in
 the future.
 - [Windows] now supports the Windows' implementation of symbolic links
 introduced in Vista in 2007. Note that symlinks have been supported on
-Unix-type systems (eg, Linux, macOS, *BSD, etc) since 2003 (ver 1.7).
+Unix-like systems (eg, Linux, macOS, *BSD, etc) since 2003 (ver 1.7).
 - [Windows] now supports '/' as directory separators (in addition to
 the usual '\\') for pathnames since Windows can also handle these.
 (Specifically, Windows accepts both separators at the Win32 API
@@ -453,7 +476,7 @@ not be a great hardship.
 
 Version 1.7	26 November 2003
 - [Linux/Unix] Bug fix: now handles symbolic link arguments correctly.
-This bug only affects Unix-type sytems (like Linux, FreeBSD, OpenBSD,
+This bug only affects Unix-like systems (like Linux, FreeBSD, OpenBSD,
 etc).
 - [Linux] tofrodos now uses mkstemp() to create the temporary file to
 avoid a race between file name creation and opening which may occur
@@ -492,8 +515,8 @@ Version 1.2	5 April 1997
 - (Internal version - not publicly released.)
 
 Version 1.1	16 December 1996
-- Fixed bug in creation of temporary filename on Linux.
-- Fixed bug in creation of backup filename on Linux.
+- Fixed bug in creation of temporary filenames on Linux.
+- Fixed bug in creation of backup filenames on Linux.
 
 Version 1.0	22 June 1996
 - Initial version.

@@ -53,6 +53,7 @@ call _testopts.bat
 call _testnames.bat
 call _testredir.bat
 call _testlinks.bat
+call _testrecur.bat
 
 rem Check if any of the tests failed.
 if exist temp\test-fails-log.txt goto FailedTest

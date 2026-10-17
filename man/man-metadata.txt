@@ -1,6 +1,6 @@
 ---
 title: Tofrodos
 section: 1
-footer: Tofrodos 2.1.1
-date: 20 April 2026
+footer: Tofrodos 3.0.0
+date: 17 October 2026
 ---

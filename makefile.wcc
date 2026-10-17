@@ -53,7 +53,7 @@ LN = copy
 RM = del
 
 # flags
-CFLAGS = -oxa -wx -fpi -zp1 -zq $(TCFLAGS) $(CINCFLAGS) $(CDEBUG)
+CFLAGS = -oxa -wx -we -fpi -zp1 -zq $(TCFLAGS) $(CINCFLAGS) $(CDEBUG)
 CINCFLAGS = -i=$(LIBDIR)
 COUTFLAG = /fo=
 LDFLAGS = $(TLFLAGS) op q,c,m,el $(LDEBUG)
@@ -73,12 +73,17 @@ LIBOBJS = $(LIBDIR)\getopt.obj &
 	$(LIBDIR)\mkstemp.obj &
 	$(LIBDIR)\wildargv.obj
 SYSOBJS = $(SYSDIR)\check_and_save_file_info.obj &
+	$(SYSDIR)\recursively_process.obj &
 	$(SYSDIR)\resolve_filename_and_convert.obj
-OBJS =	convert_file.obj &
+OBJS =	add_to_sorted_array.obj &
+	append_to_path_prefix.obj &
+	convert_file.obj &
 	emsg.obj &
 	init.obj &
+	item_is_in_array.obj &
 	make_filenames.obj &
 	process_file.obj &
+	strip_trailing_dir_separators.obj &
 	tofrodos.obj &
 	utility.obj
 
